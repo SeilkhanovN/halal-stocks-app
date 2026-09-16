@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(cd backend*)",
+      "Bash(cd frontend*)",
+      "Bash(npm install*)",
+      "Bash(npm run dev*)",
+      "Bash(npm run test*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run typecheck*)",
+      "Bash(npm run build*)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(git commit*)",
+      "Bash(rm*)",
+      "Bash(docker*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Write(./.env)",
+      "Read(**/secrets/**)",
+      "Write(**/secrets/**)"
+    ]
+  }
+}

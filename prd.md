@@ -21,7 +21,7 @@ review **and** passing tests — never by hand.
 | Favorites | **One global list** in SQLite (no users, no auth). |
 | Backend tooling | Fastify 5, Vitest, `app.inject()` for route tests, ESLint + typescript-eslint, `typecheck` script. Env loaded with Node's `--env-file-if-exists` (no dotenv). **TypeScript ~6.0** (not 7: typescript-eslint caps at <6.1, decided 2026-09-16). **ESM** (`"type": "module"`, `verbatimModuleSyntax`, `.js` extensions on relative imports; top-level await is OK). `tsconfig.json` type-checks tests; `tsconfig.build.json` excludes them from `dist/`. Errors: throw `AppError(code, statusCode, message)` from `src/lib/errors.ts`. |
 | Frontend tooling | React 19 + Vite, **TanStack Query** (data fetching/mutations), Vitest + React Testing Library + jsdom + user-event + jest-dom. **No router**: the detail view is a side panel. Vite dev proxy `/api` → `http://localhost:3000` (strips `/api`), so no CORS dependency. |
-| UI | Table (ticker, name, industry, badge, ★) with pagination. Debounced (250 ms) search: ticker prefix or name contains, case-insensitive, exact ticker match ranked first. Status filter chips (All / Halal / Not halal / Unknown). "Favorites only" toggle. Detail side panel showing each ratio vs its threshold and the reasons. "Data as of" date. Disclaimer ("automated screen, not a fatwa or financial advice") in the footer **and** the detail panel. |
+| UI | Table (ticker, name, industry, badge, ★) with pagination. Debounced (250 ms) search: ticker prefix or name contains, case-insensitive, exact ticker match ranked first. Status filter chips (All / Halal / Not halal / Unknown). "Favorites only" toggle. Detail side panel showing each ratio vs its threshold and the reasons. "Data as of" date. Disclaimer in the footer **and** the detail panel: automated **financial-ratio** screen (AAOIFI), does **not** analyse revenue breakdowns (so mixed-business companies, e.g. hotels selling alcohol, may show as halal), not a fatwa or financial advice. (Option A, decided 2026-09-16: compute in-house, no paid halal-verdict API.) |
 | Error policy | 503 `DATA_NOT_SEEDED` only when the stocks table is empty. Staleness is shown (`dataAsOf`, `screenedAt`), not hidden and not turned into an error. |
 
 ## API contract (both services build against this — types are duplicated per service, not shared)
@@ -129,7 +129,7 @@ interface Paginated<T> {
       "Changing a threshold in config/screening.ts (e.g. 0.30 → 0.33) changes the outcome of case (i) with no code change, and a test proves it by passing a config override",
       "HalalStatus is never represented as a boolean anywhere"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BE-03",
@@ -340,7 +340,7 @@ interface Paginated<T> {
   {
     "id": "FE-02",
     "title": "Stock table with pagination, badges, data-as-of, disclaimer footer, and loading/error/empty states",
-    "description": "components/StockTable (columns: ticker, name, industry, HalalBadge, favorite star placeholder that is display-only in this task), components/Pagination (prev/next, 'Page X of Y', disabled at the bounds), components/HalalBadge (three distinct visual states with a text label, not color-only), and components/Footer with the disclaimer ('Automated screen based on AAOIFI financial ratios — not a fatwa or financial advice') plus 'Data as of <date>' from meta.dataAsOf. Uses useQuery with placeholderData keepPreviousData so the table doesn't flash on page change. States: loading skeleton; a DATA_NOT_SEEDED message telling the user to run `npm run seed`; a generic error with a retry button; an empty result. Styles and tests are colocated next to each component.",
+    "description": "components/StockTable (columns: ticker, name, industry, HalalBadge, favorite star placeholder that is display-only in this task), components/Pagination (prev/next, 'Page X of Y', disabled at the bounds), components/HalalBadge (three distinct visual states with a text label, not color-only), and components/Footer with the disclaimer ('Automated screen based on AAOIFI financial ratios only — revenue from non-permissible business lines is not analysed. Not a fatwa or financial advice.') plus 'Data as of <date>' from meta.dataAsOf. Uses useQuery with placeholderData keepPreviousData so the table doesn't flash on page change. States: loading skeleton; a DATA_NOT_SEEDED message telling the user to run `npm run seed`; a generic error with a retry button; an empty result. Styles and tests are colocated next to each component.",
     "files": [
       "frontend/src/App.tsx",
       "frontend/src/components/StockTable/StockTable.tsx",
@@ -442,7 +442,7 @@ interface Paginated<T> {
   {
     "id": "DOC-01",
     "title": "README run instructions + end-to-end verification",
-    "description": "Documentation only (a cross-service docs change, explicitly allowed). The root README covers the prerequisites (Node 24, Finnhub free key, SEC User-Agent) and clone → install → seed → run in about 5 commands, for both offline (`npm run seed:fixtures`) and live (`npm run seed`, ~15 min) paths. It also covers the methodology summary (AAOIFI thresholds, status resolution order, where to change thresholds, then `npm run seed -- --rescreen`), known limitations (current market cap not averaged, IFRS filers → unknown, Finnhub free tier is personal-use only, EDGAR data up to a quarter old), and the disclaimer. Update backend/README.md and frontend/README.md with the service-specific scripts. Then actually run the end-to-end verification from prompt.md and record the result in activity.md.",
+    "description": "Documentation only (a cross-service docs change, explicitly allowed). The root README covers the prerequisites (Node 24, Finnhub free key, SEC User-Agent) and clone → install → seed → run in about 5 commands, for both offline (`npm run seed:fixtures`) and live (`npm run seed`, ~15 min) paths. It also covers the methodology summary (AAOIFI thresholds, status resolution order, where to change thresholds, then `npm run seed -- --rescreen`), known limitations (financial-ratio screen only: no revenue-segment analysis, so mixed-business companies may be marked halal where commercial screeners like Zoya/Musaffa would not; 5% rule counts interest income only; current market cap not averaged, IFRS filers → unknown, Finnhub free tier is personal-use only, EDGAR data up to a quarter old), and the disclaimer. Update backend/README.md and frontend/README.md with the service-specific scripts. Then actually run the end-to-end verification from prompt.md and record the result in activity.md.",
     "files": [
       "README.md",
       "backend/README.md",

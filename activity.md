@@ -11,7 +11,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 | M0 Foundation | BE-02 | Halal screening core | done |
 | M0 Foundation | BE-03 | SQLite persistence | done |
 | M0 Foundation | BE-04 | EDGAR extractor | done |
-| **M1 Search MVP** | MVP-01 | Universe snapshot + seed:constituents | pending |
+| **M1 Search MVP** | MVP-01 | S&P 500 snapshot + seed:constituents | done |
 | **M1 Search MVP** | MVP-02 | GET /stocks search + pagination | pending |
 | **M1 Search MVP** | MVP-03 | Frontend tooling baseline | pending |
 | **M1 Search MVP** | MVP-04 | Stock search page | pending |
@@ -43,3 +43,8 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-17 — FOLLOW-UPS (deferred) — (11) after first live seed, measure how many stocks are unknown due to 'Total debt not reported' (debt-free companies like ISRG/MNST/CPRT); revisit null-vs-0 then [BE-04].
 - 2026-09-17 — BE-04 — done — 239/239 tests, typecheck/lint/build green; pure extractor (no any/casts/fs/network). Review clean; applied its should-fix (US-GAAP filer with unmatched tags no longer mislabeled 'Foreign/IFRS filer' — keeps specific 'not reported' issues) and nit (instant restatement dedupe independent of start). Tests cover 52/53-week FY, multi-year Q4 derivation, reported-Q4 no double count, TTM rollover, tag recency, debt non-double-counting, feed into screen().
 - 2026-09-17 — RESTRUCTURE — Tasks regrouped into milestones (user request): build a thin search MVP through backend + frontend first (MVP-01..05: universe snapshot, GET /stocks search, frontend tooling, search page, run end to end), then add features one at a time — M2 halal badge, M3 detail panel, M4 favorites, M5 docs. BE-07/FE-01/FE-02/FE-03 split into MVP-02/H-01/MVP-03/MVP-04/H-02 and parts of BE-09/FE-04. Stop for user review at the end of each milestone.
+- 2026-09-17 — MVP-01 — in progress — Branch feature/mvp-01-seed-constituents off master (after PR #4). Planner running.
+- 2026-09-17 — MVP-01 — in progress — Scope change (user): S&P 500 only; NASDAQ-100 snapshot dropped for now. Spec approved with that change (no manual transcription fallback).
+- 2026-09-17 — FOLLOW-UPS (deferred) — (12) add NASDAQ-100 constituents (source TBD; BE-05/BE-06 prd text still mentions it) [MVP-01].
+- 2026-09-17 — MVP-01 — done — 262/262 tests, typecheck/lint/build green; review clean (nits only). S&P 500 snapshot (503 rows, github.com/datasets) + hand-written CSV parser + stocks-repo.upsertIdentities + npm run seed:constituents. Own verification: seed twice on temp DB → 503 inserted, then 503 unchanged. Default DB path backend/data/halal-stocks.db (gitignored).
+- 2026-09-17 — FOLLOW-UPS (deferred, minor) — (13) .gitattributes eol=lf for backend/data/constituents/*.csv (overlaps 6); (14) upsertIdentities rollback path not unit-tested (no clean way to force a DB error) [MVP-01].

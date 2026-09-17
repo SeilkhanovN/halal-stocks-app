@@ -9,7 +9,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 |---|---|---|
 | BE-01 | Backend tooling baseline | done |
 | BE-02 | Halal screening core | done |
-| BE-03 | SQLite persistence | pending |
+| BE-03 | SQLite persistence | done |
 | BE-04 | EDGAR extractor | pending |
 | BE-05 | Data clients + fixture mode | pending |
 | BE-06 | Seed CLI | pending |
@@ -32,3 +32,6 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-16 — BE-02 — in progress — Spec approved with amendments (reasons: primary cause first, industry line only when prohibited/missing; thresholds formatted "30%"). Data-source decision re-confirmed: Option A — compute AAOIFI in-house (no paid halal API); disclaimer must state it is a financial-ratio screen that does not analyse revenue breakdowns (mixed-business companies may pass). Negative numerators → unknown.
 - 2026-09-16 — BE-02 — done — 130/130 tests, typecheck/lint/build green, no fixtures in dist. Review clean except near-limit display bug found by own smoke test + re-review ("30.0000% is below the 30% limit"); fixed per user by widening at-limit tolerance to 1e-6 (values within 0.0001 pct-points of a limit = breach → not_halal) + regression test (verified it fails on old 1e-9). Also: reasons prefixed with ratio label; escalating decimals near limits; isUsableNumber type fix; tsconfig.build.json excludes __fixtures__ (user-approved).
 - 2026-09-16 — FOLLOW-UPS (deferred, minor) — (1) extract resolvePort() from server.ts for tests [BE-01]; (2) verify --env-file-if-exists actually loads a .env file [BE-01]; (3) empty/whitespace ticker guard in screen() [BE-02]; (4) runtime typeof-number guard for inputs parsed from external APIs [BE-02, revisit in BE-04/05]; (5) Finnhub industry labels are guesses — verify in BE-05; (6) .gitattributes eol=lf.
+- 2026-09-16 — BE-03 — in progress — Branch feature/be-03-sqlite off master (after PR #1 merge). Planner running.
+- 2026-09-17 — BE-03 — done — 203/203 tests, typecheck/lint/build green; review approved (1 should-fix applied: openDatabase closes handle if setup/migrations throw). Own smoke test confirmed search ranking, literal wildcards, brk-b alias, combined filters, pagination, favorites idempotency, StockNotFoundError, screening JSON round-trip. No new deps (node:sqlite).
+- 2026-09-17 — FOLLOW-UPS (deferred, minor) — (7) list() queries re-prepared per call; cache if hot [BE-03]; (8) screening JSON read with an unvalidated cast — revisit when external data is written (BE-05/06) [BE-03]; (9) migration rollback not unit-tested (no injection point) [BE-03]; (10) replace halal-screen.ts normalizeTickerLocal with lib/ticker.ts [BE-02/03].

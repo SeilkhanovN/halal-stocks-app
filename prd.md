@@ -158,7 +158,7 @@ interface Paginated<T> {
       "The screening JSON column round-trips to a HalalScreening object with types from types/halal.ts (no duplicated shape)",
       "*.db files under backend/data are gitignored"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BE-04",

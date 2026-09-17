@@ -9,7 +9,7 @@ review **and** passing tests — never by hand.
 | Area | Decision |
 |---|---|
 | Runtime | Node **24 LTS** (`engines: ">=24"`, `.nvmrc` = `24`). The machine currently has Node 20.18 — the user upgrades before implementation starts. |
-| Universe | S&P 500 ∪ NASDAQ-100 (~550 unique tickers), from **checked-in snapshot files** (S&P 500 CSV from `github.com/datasets/s-and-p-500-companies`, NASDAQ-100 list as JSON) with a snapshot date. |
+| Universe | **For now: S&P 500 only (~503 tickers; user decision 2026-09-17 — NASDAQ-100 is a later follow-up).** Original plan: S&P 500 ∪ NASDAQ-100 (~550 unique tickers), from **checked-in snapshot files** (S&P 500 CSV from `github.com/datasets/s-and-p-500-companies`, NASDAQ-100 list as JSON) with a snapshot date. |
 | Data sources | **Finnhub free tier** `/stock/profile2`: name, exchange, `finnhubIndustry`, `marketCapitalization` (**in millions of USD**, so multiply by 1e6). **SEC EDGAR** `company_tickers_exchange.json` (ticker→CIK) + `companyfacts` (financials). Free; Finnhub key via `FINNHUB_API_KEY`; EDGAR requires `SEC_USER_AGENT` (name + email). No third-party halal-verdict API. |
 | Freshness | A **seed CLI** (run by hand) fetches, screens, and writes to SQLite. The API serves **only from SQLite** and never calls external APIs at request time. |
 | Seed robustness | Throttled (Finnhub ≤ 55 req/min, EDGAR ≤ 8 req/s). **Resumable**: per-ticker `screenedAt` + `fetchError`. Re-runs skip tickers screened in the last 7 days unless `--force`. Failed tickers stay in the list as `unknown`. `--rescreen` recomputes status from stored inputs with no network calls (for threshold changes). `--fixtures` runs fully offline from checked-in fixture JSON. |
@@ -207,11 +207,10 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
   {
     "id": "MVP-01",
     "milestone": "M1 Search MVP",
-    "title": "Stock universe snapshot + `npm run seed:constituents` (no API keys)",
-    "description": "Load the S&P 500 ∪ NASDAQ-100 universe into SQLite with NO external API keys, so search works end to end. Check in snapshot files: backend/data/constituents/sp500.csv (downloaded from github.com/datasets/s-and-p-500-companies — public CSV, includes Symbol, Security, CIK) and backend/data/constituents/nasdaq100.json ([{ ticker, name }] from the Wikipedia NASDAQ-100 components table); record source URLs + snapshot date in backend/data/constituents/README.md. src/sources/constituents.ts parses both into a deduplicated list of { ticker (normalizeTicker from lib/ticker.ts), name, cik | null } — the S&P row wins on duplicates. Add a repo method to stocks-repo.ts (e.g. upsertIdentity) that inserts missing stocks with halalStatus 'unknown', screening null, screenedAt null, dataIssues ['Not screened yet'], and for existing rows only refreshes name/cik — it must never overwrite financials or screening columns (later milestones fill those). src/scripts/seed-constituents.ts (npm run seed:constituents) opens the default DB, upserts all identities in one transaction, prints inserted / updated / total. Company name + ticker is all the MVP UI needs.",
+    "title": "S&P 500 universe snapshot + `npm run seed:constituents` (no API keys)",
+    "description": "SCOPE CHANGE 2026-09-17 (user): S&P 500 only for now — NASDAQ-100 is a later follow-up. Load the S&P 500 into SQLite with NO external API keys, so search works end to end. Check in backend/data/constituents/sp500.csv (downloaded once from https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv — public, verified 503 rows with header Symbol,Security,GICS Sector,GICS Sub-Industry,Headquarters Location,Date added,CIK,Founded); record the source URL, snapshot date, and row count in backend/data/constituents/README.md. src/sources/constituents.ts: a hand-written CSV parser (quoted fields, escaped quotes, CRLF/LF, BOM) and parseSp500Csv(text) / loadConstituents(dir?) returning deduplicated { ticker (normalizeTicker), name, cik (zero-padded to 10 digits) | null }. stocks-repo.ts gains upsertIdentities(list) → { inserted, updated, unchanged } in one transaction: new rows get halalStatus 'unknown', screening null, dataIssues ['Not screened yet']; existing rows only get name/cik refreshed — financials and screening columns are never touched. src/scripts/seed-constituents.ts (npm run seed:constituents) opens the default DB, upserts, prints the counts, always closes the DB, exit code 1 on error.",
     "files": [
       "backend/data/constituents/sp500.csv",
-      "backend/data/constituents/nasdaq100.json",
       "backend/data/constituents/README.md",
       "backend/src/sources/constituents.ts",
       "backend/src/sources/constituents.test.ts",
@@ -221,14 +220,14 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "backend/package.json"
     ],
     "acceptance_criteria": [
-      "sp500.csv and nasdaq100.json are checked in; README.md in that folder names the source URLs and snapshot date; no API key or email is needed",
-      "Loader returns roughly 515–530 unique normalized tickers (S&P 500 ~503 + NASDAQ-100 ~101, overlapping); no duplicates; share classes in dot form (BRK.B, BF.B)",
-      "Parser tests use small inline CSV/JSON samples (incl. a quoted name containing a comma), not the full files",
+      "sp500.csv is checked in; README.md in that folder names the source URL, snapshot date, and row count; no API key or email is needed",
+      "Loader returns ~503 unique normalized tickers (real-file test asserts 495–510, no duplicates, contains AAPL, MSFT, BRK.B); share classes in dot form (BRK.B, BF.B); CIK zero-padded to 10 digits",
+      "Parser tests use small inline CSV samples (quoted name with a comma, escaped quote, CRLF, BOM, missing required header → throws), not the full file",
       "`npm run seed:constituents` on an empty DB exits 0 and prints counts; running it again keeps the same total (no duplicates)",
       "Re-seeding identities never wipes halal_status / screening / financial columns of an existing row (repo test)",
       "New rows have halalStatus 'unknown' and screening null"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MVP-02",

@@ -3,25 +3,28 @@
 Append-only. One dated line per state change: `YYYY-MM-DD — <task id> — <pending|in progress|done|blocked> — <note>`.
 The source of truth for completion is `"passes"` in prd.md; this log records how each task got there.
 
-## Current state (as of 2026-09-16)
+## Current state (as of 2026-09-17, restructured into milestones)
 
-| Task | Title | State |
-|---|---|---|
-| BE-01 | Backend tooling baseline | done |
-| BE-02 | Halal screening core | done |
-| BE-03 | SQLite persistence | done |
-| BE-04 | EDGAR extractor | done |
-| BE-05 | Data clients + fixture mode | pending |
-| BE-06 | Seed CLI | pending |
-| BE-07 | GET /stocks | pending |
-| BE-08 | Stock detail + halal-status routes | pending |
-| BE-09 | Favorites routes | pending |
-| FE-01 | Frontend tooling baseline | pending |
-| FE-02 | Stock table + states + footer | pending |
-| FE-03 | Search + filters | pending |
-| FE-04 | Favorite toggle | pending |
-| FE-05 | Detail side panel | pending |
-| DOC-01 | README + end-to-end verification | pending |
+| Milestone | Task | Title | State |
+|---|---|---|---|
+| M0 Foundation | BE-01 | Backend tooling baseline | done |
+| M0 Foundation | BE-02 | Halal screening core | done |
+| M0 Foundation | BE-03 | SQLite persistence | done |
+| M0 Foundation | BE-04 | EDGAR extractor | done |
+| **M1 Search MVP** | MVP-01 | Universe snapshot + seed:constituents | pending |
+| **M1 Search MVP** | MVP-02 | GET /stocks search + pagination | pending |
+| **M1 Search MVP** | MVP-03 | Frontend tooling baseline | pending |
+| **M1 Search MVP** | MVP-04 | Stock search page | pending |
+| **M1 Search MVP** | MVP-05 | Run MVP end to end + quick start | pending |
+| M2 Halal badge | BE-05 | Data clients + fixture mode | pending |
+| M2 Halal badge | BE-06 | Seed CLI (screening) | pending |
+| M2 Halal badge | H-01 | GET /stocks status filter | pending |
+| M2 Halal badge | H-02 | Badge column, status chips, disclaimer footer | pending |
+| M3 Detail panel | BE-08 | Stock detail + halal-status routes | pending |
+| M3 Detail panel | FE-05 | Detail side panel | pending |
+| M4 Favorites | BE-09 | Favorites routes (+ favoritesOnly) | pending |
+| M4 Favorites | FE-04 | Favorite star + favorites-only toggle | pending |
+| M5 Docs | DOC-01 | Full README + end-to-end verification | pending |
 
 ## Log
 
@@ -39,3 +42,4 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-17 — BE-04 — in progress — Scope change (user): no fixture files / no SEC download in BE-04; small inline tests instead. EDGAR fixture files moved to BE-05 (offline mode). prd.md BE-04 files/ACs + BE-05 files updated. Plan amendments: latest-4-quarter TTM series, recency-based tag choice (income + balance sheet), 20-F/40-F forms, ST-borrowings-only debt, missing debt → null (conservative).
 - 2026-09-17 — FOLLOW-UPS (deferred) — (11) after first live seed, measure how many stocks are unknown due to 'Total debt not reported' (debt-free companies like ISRG/MNST/CPRT); revisit null-vs-0 then [BE-04].
 - 2026-09-17 — BE-04 — done — 239/239 tests, typecheck/lint/build green; pure extractor (no any/casts/fs/network). Review clean; applied its should-fix (US-GAAP filer with unmatched tags no longer mislabeled 'Foreign/IFRS filer' — keeps specific 'not reported' issues) and nit (instant restatement dedupe independent of start). Tests cover 52/53-week FY, multi-year Q4 derivation, reported-Q4 no double count, TTM rollover, tag recency, debt non-double-counting, feed into screen().
+- 2026-09-17 — RESTRUCTURE — Tasks regrouped into milestones (user request): build a thin search MVP through backend + frontend first (MVP-01..05: universe snapshot, GET /stocks search, frontend tooling, search page, run end to end), then add features one at a time — M2 halal badge, M3 detail panel, M4 favorites, M5 docs. BE-07/FE-01/FE-02/FE-03 split into MVP-02/H-01/MVP-03/MVP-04/H-02 and parts of BE-09/FE-04. Stop for user review at the end of each milestone.

@@ -3,9 +3,23 @@
 ## Preconditions (check before the first iteration)
 
 - `node --version` reports **v24.x or newer**. If it doesn't, stop and tell the user. Don't work around it with a different SQLite library.
-- Tasks run in prd.md order. Backend tasks (BE-*) come before frontend (FE-*) so the API contract exists first. Each task stays inside its `files` manifest; if a task needs a file outside it, stop and ask.
+- Tasks run in prd.md array order, which is grouped into milestones (see prd.md "Milestones"). Each milestone is a vertical slice through backend and frontend. Each task stays inside its `files` manifest; if a task needs a file outside it, stop and ask.
 
-## What "complete" means
+## Milestone gates
+
+Work is delivered milestone by milestone (M1 Search MVP → M2 Halal badge → M3 Detail panel → M4 Favorites → M5 Docs). **When the last task of a milestone passes, stop and let the user try the app before starting the next milestone** — including during a ralph-loop run (end the iteration with a short summary instead of continuing).
+
+### M1 Search MVP is done when
+
+- All of MVP-01 … MVP-05 have `"passes": true`.
+- On a fresh DB with **no API keys**: `cd backend && npm run seed:constituents && npm run dev`, then `cd frontend && npm run dev`, open http://localhost:5173.
+- Typing `aap` lists AAPL; typing `microsoft` lists MSFT; clearing the search restores the list; Next/Prev pagination works.
+- `curl "http://localhost:5173/api/stocks?search=aapl"` returns AAPL first (proves the Vite proxy → backend path).
+- Stopping the backend shows an error state with Retry instead of a blank page.
+- `npm run typecheck`, `lint`, `test`, `build` pass in both backend/ and frontend/.
+- The halal badge, favorites, detail panel, and disclaimer are intentionally absent in M1.
+
+## What "complete" means (whole project, after M5)
 
 The MVP is complete when **every task in prd.md has `"passes": true`** and all of the following are true on a clean checkout:
 

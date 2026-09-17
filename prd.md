@@ -283,7 +283,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "HalalStatus is a string union, never a boolean; types match the PRD contract field-for-field",
       "The QueryClient doesn't retry 4xx/503 responses"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M1 Search MVP",
     "replaces": "FE-01"
   },

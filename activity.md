@@ -13,7 +13,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 | M0 Foundation | BE-04 | EDGAR extractor | done |
 | **M1 Search MVP** | MVP-01 | S&P 500 snapshot + seed:constituents | done |
 | **M1 Search MVP** | MVP-02 | GET /stocks search + pagination | done |
-| **M1 Search MVP** | MVP-03 | Frontend tooling baseline | pending |
+| **M1 Search MVP** | MVP-03 | Frontend tooling baseline | done |
 | **M1 Search MVP** | MVP-04 | Stock search page | pending |
 | **M1 Search MVP** | MVP-05 | Run MVP end to end + quick start | pending |
 | M2 Halal badge | BE-05 | Data clients + fixture mode | pending |
@@ -50,3 +50,6 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-17 — FOLLOW-UPS (deferred, minor) — (13) .gitattributes eol=lf for backend/data/constituents/*.csv (overlaps 6); (14) upsertIdentities rollback path not unit-tested (no clean way to force a DB error) [MVP-01].
 - 2026-09-17 — MVP-02 — in progress — Branch feature/mvp-02-stocks-search-api off master (after PR #5). Planner running.
 - 2026-09-17 — MVP-02 — done — 285/285 tests, typecheck/lint/build green. GET /stocks (page/limit/search) wired to SQLite via buildApp({ db }); 503 DATA_NOT_SEEDED on empty DB. Review found 1 bug (page=1e20 passed validation → SQLite OFFSET error → 500) — fixed with page maximum 1,000,000 + regression tests (verified failing without fix); shutdown now always exits. Own in-process smoke on real seeded DB: aapl→AAPL, microsoft→MSFT, brk-b→BRK.B, 503 total, page=1e20→400. Note: developer stopped a user-started dev server on :3000 during verification — rule added (smoke tests use other ports + temp DB, never kill processes they didn't start).
+- 2026-09-17 — MVP-03 — in progress — Branch feature/mvp-03-frontend-tooling off master (after PR #6). Planner running.
+- 2026-09-17 — MVP-03 — done — 23/23 frontend tests, typecheck/lint/build green. Vite template removed; TanStack Query 5.103 + Vitest 5 + RTL 16 + jsdom 25 installed clean (no peer conflicts); /api proxy → :3000 (VITE_API_PROXY_TARGET override); typed API client (ApiError with code/status, DATA_NOT_SEEDED/VALIDATION_ERROR/HTTP_x/NETWORK_ERROR), stockKeys, retry policy (never 4xx/503, else once). User-approved out-of-manifest edits: tsconfig.app.json strict + noUncheckedIndexedAccess, tsconfig.node.json includes vitest.config.ts, index.html title. Review found 1 blocking bug: AbortError from a cancelled query was wrapped as NETWORK_ERROR and retried — fixed + 2 regression tests (verified failing without the fix). No dev servers started.
+- 2026-09-17 — FOLLOW-UPS (deferred, minor) — (15) frontend/public/icons.svg now unused; (16) consider exactOptionalPropertyTypes in frontend tsconfig to match backend [MVP-03].

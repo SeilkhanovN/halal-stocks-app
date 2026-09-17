@@ -36,8 +36,26 @@ export interface ListStocksParams {
   favoritesOnly?: boolean;
 }
 
+// Minimal identity used by MVP-01's constituents seed (src/scripts/seed-
+// constituents.ts): just enough to populate the stock universe before any
+// financial/screening data source exists. Deliberately narrower than
+// UpsertStockInput so seeding identities can never accidentally touch
+// financials/screening columns.
+export interface IdentityInput {
+  ticker: string;
+  name: string;
+  cik: string | null;
+}
+
+export interface UpsertIdentitiesResult {
+  inserted: number;
+  updated: number;
+  unchanged: number;
+}
+
 export interface StocksRepo {
   upsert(input: UpsertStockInput): void;
+  upsertIdentities(identities: readonly IdentityInput[]): UpsertIdentitiesResult;
   getByTicker(ticker: string): StockRecordWithFavorite | undefined;
   count(): number;
   maxScreenedAt(): string | null;
@@ -274,6 +292,24 @@ export function createStocksRepo(db: DatabaseSync): StocksRepo {
   const countStmt = db.prepare(`SELECT COUNT(*) AS count FROM stocks`);
   const maxScreenedAtStmt = db.prepare(`SELECT MAX(screened_at) AS max_screened_at FROM stocks`);
 
+  const selectIdentityStmt = db.prepare(`SELECT name, cik FROM stocks WHERE ticker = ?`);
+
+  // exchange/industry/financials stay NULL, data_issues starts as
+  // '["Not screened yet"]', and halal_status starts 'unknown' — a
+  // constituents-only row is not yet screened. screening/screened_at/
+  // fetch_error stay NULL until a screening run (BE-06) writes them.
+  const insertIdentityStmt = db.prepare(`
+    INSERT INTO stocks (
+      ticker, name, exchange, industry, cik, market_cap, total_debt,
+      cash_and_securities, interest_income_ttm, revenue_ttm, data_issues,
+      halal_status, screening, screened_at, fetch_error, updated_at
+    ) VALUES (?, ?, NULL, NULL, ?, NULL, NULL, NULL, NULL, NULL, '["Not screened yet"]', 'unknown', NULL, NULL, NULL, ?)
+  `);
+
+  // Only ever touches name/cik/updated_at — financials and screening columns
+  // of an existing row are never written by identity re-seeding.
+  const updateIdentityStmt = db.prepare(`UPDATE stocks SET name = ?, cik = ?, updated_at = ? WHERE ticker = ?`);
+
   function upsert(input: UpsertStockInput): void {
     const ticker = normalizeTicker(input.ticker);
     const updatedAt = new Date().toISOString();
@@ -295,6 +331,48 @@ export function createStocksRepo(db: DatabaseSync): StocksRepo {
       input.fetchError,
       updatedAt,
     );
+  }
+
+  // Upserts a batch of bare identities (ticker/name/cik) in one transaction,
+  // used by the constituents seed to populate the stock universe with no
+  // external API keys. A new ticker is inserted as an unscreened 'unknown'
+  // row; an existing ticker only has name/cik refreshed when they differ —
+  // financials and screening are never touched. Rolls back the whole batch
+  // on any error.
+  function upsertIdentities(identities: readonly IdentityInput[]): UpsertIdentitiesResult {
+    const updatedAt = new Date().toISOString();
+    let inserted = 0;
+    let updated = 0;
+    let unchanged = 0;
+
+    db.exec("BEGIN");
+    try {
+      for (const identity of identities) {
+        const ticker = normalizeTicker(identity.ticker);
+        const existingRow = selectIdentityStmt.get(ticker);
+
+        if (existingRow === undefined) {
+          insertIdentityStmt.run(ticker, identity.name, identity.cik, updatedAt);
+          inserted += 1;
+          continue;
+        }
+
+        const existingName = asString(existingRow, "name", ticker);
+        const existingCik = asNullableString(existingRow, "cik", ticker);
+        if (existingName !== identity.name || existingCik !== identity.cik) {
+          updateIdentityStmt.run(identity.name, identity.cik, updatedAt, ticker);
+          updated += 1;
+        } else {
+          unchanged += 1;
+        }
+      }
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+
+    return { inserted, updated, unchanged };
   }
 
   function getByTicker(ticker: string): StockRecordWithFavorite | undefined {
@@ -352,5 +430,5 @@ export function createStocksRepo(db: DatabaseSync): StocksRepo {
     return { rows, total };
   }
 
-  return { upsert, getByTicker, count, maxScreenedAt, list };
+  return { upsert, upsertIdentities, getByTicker, count, maxScreenedAt, list };
 }

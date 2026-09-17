@@ -460,3 +460,99 @@ describe("getByTicker with corrupted screening JSON", () => {
     expect(() => repo.getByTicker("AAPL")).toThrow(/AAPL/);
   });
 });
+
+describe("upsertIdentities", () => {
+  it("inserts new identities as unscreened 'unknown' rows", () => {
+    const result = repo.upsertIdentities([
+      { ticker: "AAPL", name: "Apple Inc", cik: "0000320193" },
+      { ticker: "MSFT", name: "Microsoft Corp", cik: "0000789019" },
+      { ticker: "BRK.B", name: "Berkshire Hathaway", cik: null },
+    ]);
+
+    expect(result).toEqual({ inserted: 3, updated: 0, unchanged: 0 });
+    expect(repo.count()).toBe(3);
+
+    const aapl = repo.getByTicker("AAPL");
+    expect(aapl?.halalStatus).toBe("unknown");
+    expect(aapl?.screening).toBeNull();
+    expect(aapl?.dataIssues).toEqual(["Not screened yet"]);
+    expect(aapl?.name).toBe("Apple Inc");
+    expect(aapl?.cik).toBe("0000320193");
+  });
+
+  it("reports the same batch re-applied as entirely unchanged, without duplicating rows", () => {
+    const identities = [
+      { ticker: "AAPL", name: "Apple Inc", cik: "0000320193" },
+      { ticker: "MSFT", name: "Microsoft Corp", cik: "0000789019" },
+      { ticker: "BRK.B", name: "Berkshire Hathaway", cik: null },
+    ];
+    repo.upsertIdentities(identities);
+
+    const second = repo.upsertIdentities(identities);
+    expect(second).toEqual({ inserted: 0, updated: 0, unchanged: 3 });
+    expect(repo.count()).toBe(3);
+  });
+
+  it("updates only the identities whose name changed", () => {
+    repo.upsertIdentities([
+      { ticker: "AAPL", name: "Apple Inc", cik: "0000320193" },
+      { ticker: "MSFT", name: "Microsoft Corp", cik: "0000789019" },
+      { ticker: "BRK.B", name: "Berkshire Hathaway", cik: null },
+    ]);
+
+    const result = repo.upsertIdentities([
+      { ticker: "AAPL", name: "Apple Incorporated", cik: "0000320193" },
+      { ticker: "MSFT", name: "Microsoft Corp", cik: "0000789019" },
+      { ticker: "BRK.B", name: "Berkshire Hathaway", cik: null },
+    ]);
+
+    expect(result).toEqual({ inserted: 0, updated: 1, unchanged: 2 });
+    expect(repo.getByTicker("AAPL")?.name).toBe("Apple Incorporated");
+  });
+
+  it("never touches halalStatus, screening, financials, dataIssues, screenedAt, or fetchError of an already-screened row", () => {
+    const screening = screen(makeScreeningInput({ ticker: "AAPL", industry: "Technology" }));
+    repo.upsert(
+      makeStock({
+        ticker: "AAPL",
+        name: "Apple Inc",
+        screening,
+        halalStatus: "halal",
+        marketCap: 3_000_000_000_000,
+        totalDebt: 100,
+        cashAndSecurities: 150,
+        interestIncomeTtm: 1,
+        revenueTtm: 400_000_000_000,
+        dataIssues: [],
+        screenedAt: "2026-01-01T00:00:00.000Z",
+        fetchError: null,
+      }),
+    );
+
+    const before = repo.getByTicker("AAPL");
+
+    const result = repo.upsertIdentities([{ ticker: "AAPL", name: "Apple Incorporated", cik: "0000320193" }]);
+
+    expect(result).toEqual({ inserted: 0, updated: 1, unchanged: 0 });
+    const after = repo.getByTicker("AAPL");
+    expect(after?.name).toBe("Apple Incorporated");
+    expect(after?.halalStatus).toBe(before?.halalStatus);
+    expect(after?.screening).toEqual(before?.screening);
+    expect(after?.marketCap).toBe(before?.marketCap);
+    expect(after?.totalDebt).toBe(before?.totalDebt);
+    expect(after?.cashAndSecurities).toBe(before?.cashAndSecurities);
+    expect(after?.interestIncomeTtm).toBe(before?.interestIncomeTtm);
+    expect(after?.revenueTtm).toBe(before?.revenueTtm);
+    expect(after?.dataIssues).toEqual(before?.dataIssues);
+    expect(after?.screenedAt).toBe(before?.screenedAt);
+    expect(after?.fetchError).toBe(before?.fetchError);
+  });
+
+  // A rollback test (batch fails partway through, count unchanged) is
+  // skipped: IdentityInput's typed fields (ticker/name: string, cik: string
+  // | null) don't leave a clean way to force the INSERT/UPDATE to fail
+  // without an `as` cast to smuggle in a wrong-shaped value at runtime, which
+  // this codebase avoids. The BEGIN/COMMIT/ROLLBACK wiring itself mirrors
+  // migrations.ts's withTransaction, which is exercised by the migration
+  // tests above.
+});

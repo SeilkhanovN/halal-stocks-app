@@ -163,31 +163,28 @@ interface Paginated<T> {
   {
     "id": "BE-04",
     "title": "EDGAR companyfacts extractor (pure parsing, US-GAAP tag fallbacks, TTM)",
-    "description": "Pure function extractFinancials(companyFacts JSON) → { totalDebt, cashAndSecurities, interestIncomeTtm, revenueTtm, asOf, issues[] }, with no network access. Ordered US-GAAP tag fallback lists per field in one place. Debt: LongTermDebtNoncurrent/LongTermDebt + LongTermDebtCurrent/DebtCurrent + ShortTermBorrowings/CommercialPaper, and when LongTermDebt already includes the current portion, don't double count. Cash+securities: CashAndCashEquivalentsAtCarryingValue + ShortTermInvestments/MarketableSecuritiesCurrent/AvailableForSaleSecuritiesDebtSecuritiesCurrent + MarketableSecuritiesNoncurrent/AvailableForSaleSecuritiesDebtSecuritiesNoncurrent. Interest income: InvestmentIncomeInterest, then InterestAndDividendIncomeOperating, then InvestmentIncomeInterestAndDividend. Revenue: Revenues, then RevenueFromContractWithCustomerExcludingAssessedTax, then SalesRevenueNet. Balance-sheet fields use the latest instant (from the same filing period when possible). Income fields are TTM: the sum of the latest 4 discrete quarters (derive Q4 from FY minus 9M when needed), otherwise the latest FY. A company with no us-gaap facts (IFRS filer) returns all nulls plus the issue 'Foreign/IFRS filer — financials not screened'. A missing field → null plus a specific issue. The planner should confirm the tag lists against the trimmed fixtures and document any change.",
+    "description": "Pure function extractFinancials(companyFacts JSON) → { totalDebt, cashAndSecurities, interestIncomeTtm, revenueTtm, asOf, issues[] }, with no network access. Ordered US-GAAP tag fallback lists per field in one place. Debt: LongTermDebtNoncurrent/LongTermDebt + LongTermDebtCurrent/DebtCurrent + ShortTermBorrowings/CommercialPaper, and when LongTermDebt already includes the current portion, don't double count. Cash+securities: CashAndCashEquivalentsAtCarryingValue + ShortTermInvestments/MarketableSecuritiesCurrent/AvailableForSaleSecuritiesDebtSecuritiesCurrent + MarketableSecuritiesNoncurrent/AvailableForSaleSecuritiesDebtSecuritiesNoncurrent. Interest income: InvestmentIncomeInterest, then InterestAndDividendIncomeOperating, then InvestmentIncomeInterestAndDividend. Revenue: Revenues, then RevenueFromContractWithCustomerExcludingAssessedTax, then SalesRevenueNet. Balance-sheet fields use the latest instant (from the same filing period when possible). Income fields are TTM: the sum of the latest 4 discrete quarters (derive Q4 from FY minus 9M when needed), otherwise the latest FY. A company with no us-gaap facts (IFRS filer) returns all nulls plus the issue 'Foreign/IFRS filer — financials not screened'. A missing field → null plus a specific issue. The planner should confirm the tag lists against the trimmed fixtures and document any change. SCOPE CHANGE 2026-09-17 (user): no fixture files and no SEC download in BE-04; tests use small inline companyfacts-shaped literals. Realistic EDGAR fixture files move to BE-05 (needed for --fixtures offline mode). Also: forms 10-K/10-Q/20-F/40-F (+/A); TTM = latest 4 consecutive quarters from a quarterly series with Q4 derived as FY − 9M per year; primary tag chosen by most recent data (income and balance-sheet); missing debt tags → null + issue (conservative); leases excluded.",
     "files": [
       "backend/src/lib/edgar-extract.ts",
-      "backend/src/lib/edgar-extract.test.ts",
-      "backend/fixtures/edgar/AAPL.json",
-      "backend/fixtures/edgar/JPM.json",
-      "backend/fixtures/edgar/T.json",
-      "backend/fixtures/edgar/ASML.json",
-      "backend/fixtures/edgar/NO_INTEREST.json"
+      "backend/src/lib/edgar-extract.test.ts"
     ],
     "acceptance_criteria": [
-      "Fixtures are trimmed to only the tags used (each file < 200 KB) and each file notes its source/date in a top-level _note field",
-      "An IFRS-only fixture (ASML) → all financial fields null plus an IFRS issue",
-      "A fixture missing all interest-income tags → interestIncomeTtm null plus the issue 'Interest income not reported'",
-      "The TTM test covers a company whose 10-K gives FY and 9M but no Q4 → Q4 is derived correctly",
-      "Tag fallback is tested: when the first-choice tag is absent, the next tag is used",
-      "Values are numbers in USD; there is no NaN; non-USD units are ignored with an issue",
-      "The function never throws on malformed/partial JSON; it returns nulls plus issues instead"
+      "Pure function, no network/fs access in edgar-extract.ts; input typed unknown and validated at runtime (no any, no casts)",
+      "Inline IFRS-style input (no us-gaap facts) → all financial fields null + the issue 'Foreign/IFRS filer — financials not screened'",
+      "Inline input missing all interest-income tags → interestIncomeTtm null + 'Interest income not reported'",
+      "TTM test: FY + 9M YTD but no discrete Q4 → Q4 derived correctly; with a newer 10-Q quarter after the FY, TTM uses the latest 4 consecutive quarters (not the old fiscal year)",
+      "Tag fallback tested: first-choice tag absent → next tag used; a stale older tag loses to a tag with more recent data",
+      "Debt is not double-counted (LongTermDebt alone vs Noncurrent + Current; ShortTermBorrowings and CommercialPaper never both)",
+      "Restated fact (same period, two filed dates) → later filed value used",
+      "Values are numbers in USD; no NaN; non-USD-only tags ignored with an issue",
+      "Never throws on malformed/partial input (null, [], {}, { facts: 5 }, non-numeric val) — returns nulls + issues"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BE-05",
     "title": "Data clients: constituents snapshot, Finnhub profile, EDGAR HTTP, throttle, fixture mode",
-    "description": "I/O layer for the seed job. constituents.ts loads the checked-in snapshots (data/constituents/sp500.csv and nasdaq100.json, each with a snapshot date) → a deduplicated, normalized ticker list. finnhub-client.ts: getProfile(ticker) → { name, exchange, industry, marketCap (profile2 marketCapitalization × 1e6) }. edgar-client.ts: loadTickerMap() from company_tickers_exchange.json → CIK lookup (handles BRK.B/BRK-B), getCompanyFacts(cik). Both use global fetch through a shared throttle (Finnhub ≤ 55/min, EDGAR ≤ 8/s), retry 429/5xx with backoff (max 3), and send the SEC User-Agent from env. On repeated failure they throw a typed DataSourceError with ticker + source context; they never return fabricated data. A DataSource interface has two implementations, live and fixture (reads backend/fixtures/finnhub/*.json and backend/fixtures/edgar/*.json, and returns 'not found' for tickers without fixtures). Missing FINNHUB_API_KEY or SEC_USER_AGENT in live mode → a clear startup error. No new dependencies.",
+    "description": "I/O layer for the seed job. constituents.ts loads the checked-in snapshots (data/constituents/sp500.csv and nasdaq100.json, each with a snapshot date) → a deduplicated, normalized ticker list. finnhub-client.ts: getProfile(ticker) → { name, exchange, industry, marketCap (profile2 marketCapitalization × 1e6) }. edgar-client.ts: loadTickerMap() from company_tickers_exchange.json → CIK lookup (handles BRK.B/BRK-B), getCompanyFacts(cik). Both use global fetch through a shared throttle (Finnhub ≤ 55/min, EDGAR ≤ 8/s), retry 429/5xx with backoff (max 3), and send the SEC User-Agent from env. On repeated failure they throw a typed DataSourceError with ticker + source context; they never return fabricated data. A DataSource interface has two implementations, live and fixture (reads backend/fixtures/finnhub/*.json and backend/fixtures/edgar/*.json, and returns 'not found' for tickers without fixtures). Missing FINNHUB_API_KEY or SEC_USER_AGENT in live mode → a clear startup error. No new dependencies. SCOPE CHANGE 2026-09-17: BE-05 also creates the EDGAR companyfacts fixture files (AAPL, JPM, T, ASML, NO_INTEREST; trimmed, <200 KB, _note with source/date; real or synthetic decided at BE-05 planning) moved out of BE-04, and a fixture-mode test asserting extractFinancials() on each yields the inputs the Fixture set criterion needs.",
     "files": [
       "backend/data/constituents/sp500.csv",
       "backend/data/constituents/nasdaq100.json",
@@ -203,6 +200,11 @@ interface Paginated<T> {
       "backend/fixtures/finnhub/ASML.json",
       "backend/fixtures/finnhub/STZ.json",
       "backend/fixtures/finnhub/NO_INTEREST.json",
+      "backend/fixtures/edgar/AAPL.json",
+      "backend/fixtures/edgar/JPM.json",
+      "backend/fixtures/edgar/T.json",
+      "backend/fixtures/edgar/ASML.json",
+      "backend/fixtures/edgar/NO_INTEREST.json",
       "backend/fixtures/edgar/company_tickers_exchange.json",
       "backend/src/sources/constituents.test.ts",
       "backend/src/sources/finnhub-client.test.ts",

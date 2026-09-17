@@ -10,7 +10,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 | BE-01 | Backend tooling baseline | done |
 | BE-02 | Halal screening core | done |
 | BE-03 | SQLite persistence | done |
-| BE-04 | EDGAR extractor | pending |
+| BE-04 | EDGAR extractor | done |
 | BE-05 | Data clients + fixture mode | pending |
 | BE-06 | Seed CLI | pending |
 | BE-07 | GET /stocks | pending |
@@ -35,3 +35,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-16 — BE-03 — in progress — Branch feature/be-03-sqlite off master (after PR #1 merge). Planner running.
 - 2026-09-17 — BE-03 — done — 203/203 tests, typecheck/lint/build green; review approved (1 should-fix applied: openDatabase closes handle if setup/migrations throw). Own smoke test confirmed search ranking, literal wildcards, brk-b alias, combined filters, pagination, favorites idempotency, StockNotFoundError, screening JSON round-trip. No new deps (node:sqlite).
 - 2026-09-17 — FOLLOW-UPS (deferred, minor) — (7) list() queries re-prepared per call; cache if hot [BE-03]; (8) screening JSON read with an unvalidated cast — revisit when external data is written (BE-05/06) [BE-03]; (9) migration rollback not unit-tested (no injection point) [BE-03]; (10) replace halal-screen.ts normalizeTickerLocal with lib/ticker.ts [BE-02/03].
+- 2026-09-17 — BE-04 — in progress — Branch feature/be-04-edgar-extract off master (after PR #2 merge). Planner running.
+- 2026-09-17 — BE-04 — in progress — Scope change (user): no fixture files / no SEC download in BE-04; small inline tests instead. EDGAR fixture files moved to BE-05 (offline mode). prd.md BE-04 files/ACs + BE-05 files updated. Plan amendments: latest-4-quarter TTM series, recency-based tag choice (income + balance sheet), 20-F/40-F forms, ST-borrowings-only debt, missing debt → null (conservative).
+- 2026-09-17 — FOLLOW-UPS (deferred) — (11) after first live seed, measure how many stocks are unknown due to 'Total debt not reported' (debt-free companies like ISRG/MNST/CPRT); revisit null-vs-0 then [BE-04].
+- 2026-09-17 — BE-04 — done — 239/239 tests, typecheck/lint/build green; pure extractor (no any/casts/fs/network). Review clean; applied its should-fix (US-GAAP filer with unmatched tags no longer mislabeled 'Foreign/IFRS filer' — keeps specific 'not reported' issues) and nit (instant restatement dedupe independent of start). Tests cover 52/53-week FY, multi-year Q4 derivation, reported-Q4 no double count, TTM rollover, tag recency, debt non-double-counting, feed into screen().

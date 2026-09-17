@@ -12,7 +12,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 | M0 Foundation | BE-03 | SQLite persistence | done |
 | M0 Foundation | BE-04 | EDGAR extractor | done |
 | **M1 Search MVP** | MVP-01 | S&P 500 snapshot + seed:constituents | done |
-| **M1 Search MVP** | MVP-02 | GET /stocks search + pagination | pending |
+| **M1 Search MVP** | MVP-02 | GET /stocks search + pagination | done |
 | **M1 Search MVP** | MVP-03 | Frontend tooling baseline | pending |
 | **M1 Search MVP** | MVP-04 | Stock search page | pending |
 | **M1 Search MVP** | MVP-05 | Run MVP end to end + quick start | pending |
@@ -48,3 +48,5 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-17 — FOLLOW-UPS (deferred) — (12) add NASDAQ-100 constituents (source TBD; BE-05/BE-06 prd text still mentions it) [MVP-01].
 - 2026-09-17 — MVP-01 — done — 262/262 tests, typecheck/lint/build green; review clean (nits only). S&P 500 snapshot (503 rows, github.com/datasets) + hand-written CSV parser + stocks-repo.upsertIdentities + npm run seed:constituents. Own verification: seed twice on temp DB → 503 inserted, then 503 unchanged. Default DB path backend/data/halal-stocks.db (gitignored).
 - 2026-09-17 — FOLLOW-UPS (deferred, minor) — (13) .gitattributes eol=lf for backend/data/constituents/*.csv (overlaps 6); (14) upsertIdentities rollback path not unit-tested (no clean way to force a DB error) [MVP-01].
+- 2026-09-17 — MVP-02 — in progress — Branch feature/mvp-02-stocks-search-api off master (after PR #5). Planner running.
+- 2026-09-17 — MVP-02 — done — 285/285 tests, typecheck/lint/build green. GET /stocks (page/limit/search) wired to SQLite via buildApp({ db }); 503 DATA_NOT_SEEDED on empty DB. Review found 1 bug (page=1e20 passed validation → SQLite OFFSET error → 500) — fixed with page maximum 1,000,000 + regression tests (verified failing without fix); shutdown now always exits. Own in-process smoke on real seeded DB: aapl→AAPL, microsoft→MSFT, brk-b→BRK.B, 503 total, page=1e20→400. Note: developer stopped a user-started dev server on :3000 during verification — rule added (smoke tests use other ports + temp DB, never kill processes they didn't start).

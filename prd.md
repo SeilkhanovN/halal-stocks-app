@@ -251,7 +251,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Existing health / error-handler / 404 tests still pass with the DB-injected buildApp",
       "Manual: after `npm run seed:constituents` and `npm run dev`, `curl \"localhost:3000/stocks?search=aapl\"` returns AAPL"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MVP-03",

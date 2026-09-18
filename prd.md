@@ -334,7 +334,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Stopping the backend while the page is open shows the error state with Retry",
       "No servers left running; verification results recorded in activity.md"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BE-05",

@@ -1,0 +1,20 @@
+.stock-search__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stock-search__controls label {
+  white-space: nowrap;
+}
+
+.stock-search__controls input {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: 6px 10px;
+}
+
+.stock-search__status {
+  margin: 12px 0;
+}

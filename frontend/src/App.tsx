@@ -1,4 +1,5 @@
 import './App.css'
+import { StockSearch } from './components/StockSearch/StockSearch.tsx'
 
 function App() {
   return (
@@ -7,7 +8,7 @@ function App() {
         <h1>Halal Stocks</h1>
       </header>
       <main className="app-main">
-        <p>Stock search coming soon.</p>
+        <StockSearch />
       </main>
     </div>
   )

@@ -1,0 +1,31 @@
+.stock-table__wrapper {
+  overflow-x: auto;
+}
+
+.stock-table {
+  min-width: 480px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stock-table th,
+.stock-table td {
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.stock-table thead tr {
+  border-bottom: 2px solid var(--border);
+}
+
+.stock-table tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.stock-table__ticker {
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+}
+
+.stock-table--updating {
+  opacity: 0.6;
+}

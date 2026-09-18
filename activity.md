@@ -14,7 +14,7 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 | **M1 Search MVP** | MVP-01 | S&P 500 snapshot + seed:constituents | done |
 | **M1 Search MVP** | MVP-02 | GET /stocks search + pagination | done |
 | **M1 Search MVP** | MVP-03 | Frontend tooling baseline | done |
-| **M1 Search MVP** | MVP-04 | Stock search page | pending |
+| **M1 Search MVP** | MVP-04 | Stock search page | done |
 | **M1 Search MVP** | MVP-05 | Run MVP end to end + quick start | pending |
 | M2 Halal badge | BE-05 | Data clients + fixture mode | pending |
 | M2 Halal badge | BE-06 | Seed CLI (screening) | pending |
@@ -53,3 +53,5 @@ The source of truth for completion is `"passes"` in prd.md; this log records how
 - 2026-09-17 — MVP-03 — in progress — Branch feature/mvp-03-frontend-tooling off master (after PR #6). Planner running.
 - 2026-09-17 — MVP-03 — done — 23/23 frontend tests, typecheck/lint/build green. Vite template removed; TanStack Query 5.103 + Vitest 5 + RTL 16 + jsdom 25 installed clean (no peer conflicts); /api proxy → :3000 (VITE_API_PROXY_TARGET override); typed API client (ApiError with code/status, DATA_NOT_SEEDED/VALIDATION_ERROR/HTTP_x/NETWORK_ERROR), stockKeys, retry policy (never 4xx/503, else once). User-approved out-of-manifest edits: tsconfig.app.json strict + noUncheckedIndexedAccess, tsconfig.node.json includes vitest.config.ts, index.html title. Review found 1 blocking bug: AbortError from a cancelled query was wrapped as NETWORK_ERROR and retried — fixed + 2 regression tests (verified failing without the fix). No dev servers started.
 - 2026-09-17 — FOLLOW-UPS (deferred, minor) — (15) frontend/public/icons.svg now unused; (16) consider exactOptionalPropertyTypes in frontend tsconfig to match backend [MVP-03].
+- 2026-09-18 — MVP-04 — in progress — Branch feature/mvp-04-search-page off master (after PR #7). Planner running.
+- 2026-09-18 — MVP-04 — done — 51/51 frontend tests, typecheck/lint/build green. Search page: debounced (250ms) input + Clear, Ticker/Company table (dim + aria-busy on background refetch, keepPreviousData), Prev/Next pagination (hidden when totalPages<=1), states: loading / DATA_NOT_SEEDED seed hint + Retry (amendment) / generic error + Retry / 'No stocks match'. Review found 2 blocking bugs — (a) typing on page>1 fired an extra fetch for the OLD search term (page reset moved from the keystroke handler to a render-time adjustment on the settled term), (b) Pagination used the response's echoed page so Next after typing could skip past the new result set (now uses local page state). Both fixed by me + 2 regression tests verified failing pre-fix; re-review clean. Out of manifest: App.test.tsx needed a QueryClientProvider wrapper (App now renders StockSearch). Not verifiable in jsdom: 400px layout — check in MVP-05.

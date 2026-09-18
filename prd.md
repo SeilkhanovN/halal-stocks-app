@@ -317,7 +317,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Tests mock fetch / the API client — no real network; `npm run typecheck`, `lint`, `test`, `build` pass in frontend/",
       "Usable at 400px width (table scrolls inside its own container)"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "MVP-05",

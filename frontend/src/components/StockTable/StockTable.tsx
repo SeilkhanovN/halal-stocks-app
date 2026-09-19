@@ -1,3 +1,4 @@
+import type { KeyboardEvent, SyntheticEvent } from 'react'
 import './StockTable.css'
 import { HalalBadge } from '../HalalBadge/HalalBadge.tsx'
 import type { StockSummary } from '../../api/types.ts'
@@ -5,9 +6,10 @@ import type { StockSummary } from '../../api/types.ts'
 interface StockTableProps {
   stocks: StockSummary[]
   isFetching?: boolean
+  onRowActivate: (ticker: string, event: SyntheticEvent<HTMLTableRowElement>) => void
 }
 
-export function StockTable({ stocks, isFetching }: StockTableProps) {
+export function StockTable({ stocks, isFetching, onRowActivate }: StockTableProps) {
   if (stocks.length === 0) {
     return null
   }
@@ -28,7 +30,19 @@ export function StockTable({ stocks, isFetching }: StockTableProps) {
         </thead>
         <tbody>
           {stocks.map((stock) => (
-            <tr key={stock.ticker}>
+            <tr
+              key={stock.ticker}
+              className="stock-table__row"
+              tabIndex={0}
+              data-ticker={stock.ticker}
+              aria-label={`View details for ${stock.ticker}, ${stock.name}`}
+              onClick={(event) => onRowActivate(stock.ticker, event)}
+              onKeyDown={(event: KeyboardEvent<HTMLTableRowElement>) => {
+                if (event.key === 'Enter') {
+                  onRowActivate(stock.ticker, event)
+                }
+              }}
+            >
               <td className="stock-table__ticker">{stock.ticker}</td>
               <td>{stock.name}</td>
               <td>

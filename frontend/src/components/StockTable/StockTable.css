@@ -29,3 +29,24 @@
 .stock-table--updating {
   opacity: 0.6;
 }
+
+.stock-table__row {
+  --stock-table-row-hover-bg: #f3f4f6;
+
+  cursor: pointer;
+}
+
+.stock-table__row:hover {
+  background: var(--stock-table-row-hover-bg);
+}
+
+.stock-table__row:focus-visible {
+  outline: 2px solid var(--border);
+  outline-offset: -2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .stock-table__row {
+    --stock-table-row-hover-bg: #24262f;
+  }
+}

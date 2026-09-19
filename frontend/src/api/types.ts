@@ -41,3 +41,35 @@ export interface ListStocksParams {
   search?: string
   status?: HalalStatus
 }
+
+export type RatioKey = 'debtToMarketCap' | 'cashAndSecuritiesToMarketCap' | 'interestIncomeToRevenue'
+
+export interface RatioResult {
+  key: RatioKey
+  label: string // e.g. "Debt / market cap"
+  value: number | null // fraction, e.g. 0.123; null = not computable
+  threshold: number // fraction, e.g. 0.30
+  breached: boolean | null // null when value is null
+  explanation: string // plain language, e.g. "12.3% is below the 30% limit."
+}
+
+export interface HalalScreening {
+  status: HalalStatus
+  methodology: 'AAOIFI'
+  screenedAt: string | null // ISO timestamp; stamped at persistence (BE-06)
+  businessActivity: {
+    industry: string | null
+    prohibited: boolean | null
+    explanation: string
+  }
+  ratios: RatioResult[] // always all three, in RatioKey order
+  reasons: string[] // why this status, plain language
+}
+
+// GET /stocks/:ticker's response shape: every StockSummary field plus
+// marketCap and the full screening breakdown (also served standalone by
+// GET /stocks/:ticker/halal-status).
+export interface StockDetail extends StockSummary {
+  marketCap: number | null
+  screening: HalalScreening
+}

@@ -491,7 +491,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "A 404 shows 'Stock not found'",
       "At 400px width the panel is full-width"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M3 Detail panel"
   },
   {

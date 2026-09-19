@@ -1,0 +1,96 @@
+.ratio-row {
+  --ratio-row-accent: var(--border);
+
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ratio-row:last-child {
+  border-bottom: none;
+}
+
+.ratio-row__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ratio-row__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.ratio-row__icon {
+  font-weight: 700;
+}
+
+.ratio-row__values {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.9em;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.ratio-row__bar {
+  margin: 6px 0;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+  overflow: hidden;
+}
+
+.ratio-row__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--ratio-row-accent);
+}
+
+.ratio-row__fill--overflow {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--ratio-row-accent),
+    var(--ratio-row-accent) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.ratio-row__explanation {
+  margin: 4px 0 0;
+  font-size: 0.9em;
+}
+
+/* pass: green */
+.ratio-row--pass {
+  --ratio-row-accent: #2f9e44;
+}
+
+/* breach: red */
+.ratio-row--breach {
+  --ratio-row-accent: #d64545;
+}
+
+/* unavailable: neutral amber, matching HalalBadge's unknown treatment —
+   missing data is not an error state. */
+.ratio-row--unavailable {
+  --ratio-row-accent: #b8860b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ratio-row--pass {
+    --ratio-row-accent: #3fae5a;
+  }
+
+  .ratio-row--breach {
+    --ratio-row-accent: #e06a6a;
+  }
+
+  .ratio-row--unavailable {
+    --ratio-row-accent: #d4a72c;
+  }
+}

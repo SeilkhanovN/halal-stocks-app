@@ -4,7 +4,11 @@ interface FooterProps {
   dataAsOf: string | null | undefined
 }
 
-const DISCLAIMER =
+// Exporting a plain string constant alongside the component doesn't trip
+// react-refresh/only-export-components (unlike StatusFilter's exported
+// STATUS_OPTION_LABELS object, which does need the disable comment) — the
+// rule's allowConstantExport option permits primitive constant exports.
+export const DISCLAIMER =
   'Automated screen based on AAOIFI financial ratios only — revenue from non-permissible business lines is not analysed. Not a fatwa or financial advice.'
 
 // `undefined` (before the first successful fetch) is treated the same as

@@ -1,0 +1,55 @@
+.stock-detail-panel__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.stock-detail-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+/* At a 400px viewport, 100vw already equals 400px, so no separate media
+   query is needed to satisfy the "full-width at 400px" criterion — see
+   activity.md for the manual-verification note (jsdom has no layout
+   engine, the same limitation MVP-04 already recorded). */
+.stock-detail-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--text);
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  box-shadow: -4px 0 16px rgb(0 0 0 / 20%);
+}
+
+.stock-detail-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stock-detail-panel__header h2 {
+  margin: 0;
+}
+
+.stock-detail-panel__meta {
+  opacity: 0.85;
+}
+
+.stock-detail-panel__market-cap {
+  font-weight: 600;
+}
+
+.stock-detail-panel__disclaimer {
+  margin-top: 16px;
+  font-size: 0.85em;
+  opacity: 0.75;
+}

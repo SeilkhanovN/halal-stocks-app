@@ -2,7 +2,7 @@
 // /api (see vite.config.ts), which forwards to the Fastify backend and
 // strips the prefix, so no CORS handling is needed here.
 
-import type { ApiErrorBody, ListStocksParams, Paginated, StockSummary } from './types.ts'
+import type { ApiErrorBody, ListStocksParams, Paginated, StockDetail, StockSummary } from './types.ts'
 
 export class ApiError extends Error {
   readonly status: number
@@ -123,6 +123,22 @@ export async function fetchStocks(
     throw new ApiError(0, 'EMPTY_RESPONSE', 'Expected a response body from GET /stocks')
   }
   return body
+}
+
+// GET /stocks/:ticker wraps its payload in { data: StockDetail } (unlike
+// GET /stocks, whose Paginated<T> already has its own `data` array field at
+// the top level) — this unwraps that envelope so callers just get a
+// StockDetail.
+export async function fetchStockDetail(ticker: string, signal?: AbortSignal): Promise<StockDetail> {
+  const body = await request<{ data: StockDetail }>(`/stocks/${encodeURIComponent(ticker)}`, {
+    signal,
+  })
+  if (body === undefined) {
+    // GET /stocks/:ticker always returns a body; this only guards the type
+    // and should never be reachable in practice.
+    throw new ApiError(0, 'EMPTY_RESPONSE', 'Expected a response body from GET /stocks/:ticker')
+  }
+  return body.data
 }
 
 export function shouldRetryQuery(failureCount: number, error: unknown): boolean {

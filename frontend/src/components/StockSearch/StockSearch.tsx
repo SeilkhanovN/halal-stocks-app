@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode, type SyntheticEvent } from 'react'
 import './StockSearch.css'
 import { ApiError } from '../../api/client.ts'
 import { useStocks } from '../../hooks/useStocks.ts'
@@ -6,6 +6,7 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue.ts'
 import { StockTable } from '../StockTable/StockTable.tsx'
 import { Pagination } from '../Pagination/Pagination.tsx'
 import { StatusFilter, STATUS_OPTION_LABELS, type StatusFilterValue } from '../StatusFilter/StatusFilter.tsx'
+import { StockDetailPanel } from '../StockDetailPanel/StockDetailPanel.tsx'
 import { Footer } from '../Footer/Footer.tsx'
 import type { Paginated, StockSummary } from '../../api/types.ts'
 
@@ -13,6 +14,8 @@ export function StockSearch() {
   const [searchText, setSearchText] = useState('')
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<StatusFilterValue>('all')
+  const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
 
   const debouncedSearch = useDebouncedValue(searchText, 250)
 
@@ -45,6 +48,30 @@ export function StockSearch() {
   function handleStatusChange(next: StatusFilterValue) {
     setStatus(next)
     setPage(1)
+  }
+
+  // Captures event.currentTarget (the <tr> itself), not a ticker-string
+  // lookup at close time: rows are keyed by stock.ticker in StockTable's
+  // .map(), so React reuses the same DOM node across re-renders (e.g. a
+  // background refetch of the same page) as long as that ticker stays in
+  // the visible result set.
+  function handleRowActivate(ticker: string, event: SyntheticEvent<HTMLTableRowElement>) {
+    triggerRef.current = event.currentTarget
+    setSelectedTicker(ticker)
+  }
+
+  // Only refocus the originating row if it's still attached to the
+  // document — it can be gone if the filter or page changed while the
+  // panel was open — falling back to the search input otherwise.
+  function handleClosePanel() {
+    const node = triggerRef.current
+    if (node !== null && node.isConnected) {
+      node.focus()
+    } else {
+      document.getElementById('stock-search-input')?.focus()
+    }
+    triggerRef.current = null
+    setSelectedTicker(null)
   }
 
   const showUpdating = isFetching && !isPending
@@ -87,7 +114,11 @@ export function StockSearch() {
 
         {!isPending && !isError && data ? (
           <>
-            <StockTable stocks={data.data} isFetching={showUpdating} />
+            <StockTable
+              stocks={data.data}
+              isFetching={showUpdating}
+              onRowActivate={handleRowActivate}
+            />
             {/* Local `page`, not data.pagination.page: with keepPreviousData the
                 response can still echo the previous page while a new one loads,
                 and Next/Prev must step from the page the user is actually on. */}
@@ -99,6 +130,9 @@ export function StockSearch() {
           </>
         ) : null}
       </section>
+      {selectedTicker !== null ? (
+        <StockDetailPanel ticker={selectedTicker} onClose={handleClosePanel} />
+      ) : null}
       <Footer dataAsOf={data?.meta.dataAsOf} />
     </>
   )

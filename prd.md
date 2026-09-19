@@ -372,7 +372,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Fixture mode reads no env vars and makes no network calls",
       "Fixture set covers halal (AAPL), not_halal by industry (JPM), not_halal by ratio (T), not_halal by ticker denylist (STZ), unknown by IFRS (ASML), unknown by missing interest income (NO_INTEREST)"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M2 Halal badge"
   },
   {

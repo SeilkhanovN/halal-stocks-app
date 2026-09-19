@@ -1,0 +1,17 @@
+{
+  "cik": "0000937966",
+  "entityName": "ASML Holding N.V.",
+  "facts": {
+    "dei": { "EntityRegistrantName": { "units": { "USD": [] } } },
+    "ifrs-full": {
+      "Revenue": {
+        "units": {
+          "USD": [
+            { "start": "2024-01-01", "end": "2024-12-31", "val": 28000000000, "form": "20-F", "filed": "2025-02-15" }
+          ]
+        }
+      }
+    }
+  },
+  "_note": "Synthetic — represents an IFRS/20-F filer with no us-gaap facts (real EDGAR behavior for foreign private issuers like ASML). Not downloaded from a live source. Built for BE-05 (2026-09-18) (target status: unknown, via the IFRS/foreign-filer issue)."
+}

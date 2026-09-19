@@ -1,0 +1,59 @@
+{
+  "cik": "0000320193",
+  "entityName": "Apple Inc.",
+  "facts": {
+    "us-gaap": {
+      "LongTermDebt": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-27", "val": 100000000000, "form": "10-K", "filed": "2025-11-01" }
+          ]
+        }
+      },
+      "CashAndCashEquivalentsAtCarryingValue": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-27", "val": 30000000000, "form": "10-K", "filed": "2025-11-01" }
+          ]
+        }
+      },
+      "ShortTermInvestments": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-27", "val": 20000000000, "form": "10-K", "filed": "2025-11-01" }
+          ]
+        }
+      },
+      "MarketableSecuritiesNoncurrent": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-27", "val": 100000000000, "form": "10-K", "filed": "2025-11-01" }
+          ]
+        }
+      },
+      "Revenues": {
+        "units": {
+          "USD": [
+            { "start": "2024-09-29", "end": "2024-12-28", "val": 100000000000, "form": "10-Q", "filed": "2025-01-30" },
+            { "start": "2024-12-29", "end": "2025-03-29", "val": 100000000000, "form": "10-Q", "filed": "2025-04-30" },
+            { "start": "2025-03-30", "end": "2025-06-28", "val": 100000000000, "form": "10-Q", "filed": "2025-07-30" },
+            { "start": "2024-09-29", "end": "2025-06-28", "val": 300000000000, "form": "10-Q", "filed": "2025-07-30" },
+            { "start": "2024-09-29", "end": "2025-09-27", "val": 400000000000, "form": "10-K", "filed": "2025-11-01" }
+          ]
+        }
+      },
+      "InvestmentIncomeInterest": {
+        "units": {
+          "USD": [
+            { "start": "2024-09-29", "end": "2024-12-28", "val": 1000000000, "form": "10-Q", "filed": "2025-01-30" },
+            { "start": "2024-12-29", "end": "2025-03-29", "val": 1000000000, "form": "10-Q", "filed": "2025-04-30" },
+            { "start": "2025-03-30", "end": "2025-06-28", "val": 1000000000, "form": "10-Q", "filed": "2025-07-30" },
+            { "start": "2024-09-29", "end": "2025-06-28", "val": 3000000000, "form": "10-Q", "filed": "2025-07-30" },
+            { "start": "2024-09-29", "end": "2025-09-27", "val": 4000000000, "form": "10-K", "filed": "2025-11-01" }
+          ]
+        }
+      }
+    }
+  },
+  "_note": "Synthetic — not downloaded from a live source. Built for BE-05 (2026-09-18) to exercise extractFinancials()'s TTM/derived-Q4 logic with zero data issues (target status: halal)."
+}

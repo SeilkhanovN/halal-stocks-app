@@ -1,0 +1,8 @@
+{
+  "name": "JPMorgan Chase & Co.",
+  "exchange": "NEW YORK STOCK EXCHANGE, INC.",
+  "finnhubIndustry": "Banking",
+  "marketCapitalization": 500000,
+  "ticker": "JPM",
+  "_note": "Synthetic fixture data for BE-05 (2026-09-18) — not downloaded from a live API."
+}

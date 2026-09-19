@@ -1,0 +1,50 @@
+{
+  "cik": "0000019617",
+  "entityName": "JPMorgan Chase & Co.",
+  "facts": {
+    "us-gaap": {
+      "LongTermDebt": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-30", "val": 300000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      },
+      "CashAndCashEquivalentsAtCarryingValue": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-30", "val": 150000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      },
+      "ShortTermInvestments": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-30", "val": 50000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      },
+      "Revenues": {
+        "units": {
+          "USD": [
+            { "start": "2024-10-01", "end": "2024-12-31", "val": 42500000000, "form": "10-Q", "filed": "2025-01-28" },
+            { "start": "2025-01-01", "end": "2025-03-31", "val": 42500000000, "form": "10-Q", "filed": "2025-04-28" },
+            { "start": "2025-04-01", "end": "2025-06-30", "val": 42500000000, "form": "10-Q", "filed": "2025-07-28" },
+            { "start": "2025-07-01", "end": "2025-09-30", "val": 42500000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      },
+      "InvestmentIncomeInterest": {
+        "units": {
+          "USD": [
+            { "start": "2024-10-01", "end": "2024-12-31", "val": 20000000000, "form": "10-Q", "filed": "2025-01-28" },
+            { "start": "2025-01-01", "end": "2025-03-31", "val": 20000000000, "form": "10-Q", "filed": "2025-04-28" },
+            { "start": "2025-04-01", "end": "2025-06-30", "val": 20000000000, "form": "10-Q", "filed": "2025-07-28" },
+            { "start": "2025-07-01", "end": "2025-09-30", "val": 20000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      }
+    }
+  },
+  "_note": "Synthetic — not downloaded from a live source. Built for BE-05 (2026-09-18): all four AAOIFI ratios breach and the industry ('Banking') is on the prohibited list (target status: not_halal)."
+}

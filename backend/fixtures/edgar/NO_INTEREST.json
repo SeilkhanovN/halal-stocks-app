@@ -1,0 +1,33 @@
+{
+  "cik": "0000000001",
+  "entityName": "No Interest Test Co.",
+  "facts": {
+    "us-gaap": {
+      "LongTermDebt": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-30", "val": 5000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      },
+      "CashAndCashEquivalentsAtCarryingValue": {
+        "units": {
+          "USD": [
+            { "end": "2025-09-30", "val": 5000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      },
+      "Revenues": {
+        "units": {
+          "USD": [
+            { "start": "2024-10-01", "end": "2024-12-31", "val": 5000000000, "form": "10-Q", "filed": "2025-01-28" },
+            { "start": "2025-01-01", "end": "2025-03-31", "val": 5000000000, "form": "10-Q", "filed": "2025-04-28" },
+            { "start": "2025-04-01", "end": "2025-06-30", "val": 5000000000, "form": "10-Q", "filed": "2025-07-28" },
+            { "start": "2025-07-01", "end": "2025-09-30", "val": 5000000000, "form": "10-Q", "filed": "2025-10-25" }
+          ]
+        }
+      }
+    }
+  },
+  "_note": "Synthetic — not downloaded from a live source. Built for BE-05 (2026-09-18): a not-real ticker with no interest-income tag reported at all, so debt and cash ratios pass but interestIncomeToRevenue is not computable (target status: unknown)."
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Apple Inc.",
+  "exchange": "NASDAQ NMS - GLOBAL MARKET",
+  "finnhubIndustry": "Technology",
+  "marketCapitalization": 3000000,
+  "ticker": "AAPL",
+  "_note": "Synthetic fixture data for BE-05 (2026-09-18) — not downloaded from a live API."
+}

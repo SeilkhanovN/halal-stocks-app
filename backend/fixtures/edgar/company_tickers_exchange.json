@@ -1,0 +1,11 @@
+{
+  "fields": ["cik", "name", "ticker", "exchange"],
+  "data": [
+    [320193, "Apple Inc.", "AAPL", "Nasdaq"],
+    [19617, "JPMorgan Chase & Co.", "JPM", "NYSE"],
+    [732717, "AT&T Inc.", "T", "NYSE"],
+    [937966, "ASML Holding N.V.", "ASML", "Nasdaq"],
+    [1067983, "Berkshire Hathaway Inc.", "BRK.B", "NYSE"]
+  ],
+  "_note": "Trimmed excerpt shaped like https://www.sec.gov/files/company_tickers_exchange.json, for edgar-client.test.ts only (not read by fixture-source.ts / --fixtures seeding). CIKs are best-effort, not network-verified during this offline session — their exact correctness doesn't affect any test assertion."
+}

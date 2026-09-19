@@ -1,0 +1,8 @@
+{
+  "name": "AT&T Inc.",
+  "exchange": "NEW YORK STOCK EXCHANGE, INC.",
+  "finnhubIndustry": "Telecommunication Services",
+  "marketCapitalization": 150000,
+  "ticker": "T",
+  "_note": "Synthetic fixture data for BE-05 (2026-09-18) — not downloaded from a live API."
+}

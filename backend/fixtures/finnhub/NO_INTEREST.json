@@ -1,0 +1,8 @@
+{
+  "name": "No Interest Test Co.",
+  "exchange": "NASDAQ NMS - GLOBAL MARKET",
+  "finnhubIndustry": "Technology",
+  "marketCapitalization": 50000,
+  "ticker": "NO_INTEREST",
+  "_note": "Synthetic, not-real ticker created for BE-05 (2026-09-18) to test the 'interest income not reported' -> unknown path. Not downloaded from a live API."
+}

@@ -394,7 +394,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Live mode with missing env vars exits non-zero with a message naming the missing variable, before any fetch",
       "A failure never stores a halal status (wrong data is worse than no data)"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M2 Halal badge"
   },
   {

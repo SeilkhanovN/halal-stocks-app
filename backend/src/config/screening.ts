@@ -10,10 +10,36 @@ import type { ScreeningConfig } from "../types/halal.js";
 //   etc. that aren't conventional lenders), and interest-bearing lenders
 //   under that label are usually still caught by the interestIncomeToRevenue
 //   ratio breach. Revisit only with per-company evidence.
-// - These industry/ticker labels are best-effort guesses at Finnhub's
-//   `finnhubIndustry` vocabulary and ticker-level exceptions. They must be
-//   verified against real Finnhub responses once BE-05 wires up the live
-//   data source, and adjusted there if the actual labels differ.
+// - VERIFIED against a full live seed of the S&P 500 (503 tickers,
+//   2026-09-19). "Banking", "Insurance" and "Tobacco" all match real
+//   `finnhubIndustry` values. "Casinos & Gaming" matches NOTHING — Finnhub
+//   files casinos under "Hotels, Restaurants & Leisure" alongside hotels and
+//   cruise lines, so that entry is currently dead. MGM/WYNN/LVS still come
+//   out not_halal, but only because they happen to carry heavy debt; a
+//   low-debt gambling company would pass. Fixing this properly means adding
+//   them to prohibitedTickers (the STZ/TAP/BF.B pattern), not denylisting
+//   the industry, which would also catch hotels and cruises. Deferred by the
+//   user 2026-09-19.
+//
+// - Unknown-rate policy (measured on that same live seed, user decided
+//   2026-09-19 to KEEP THE CURRENT STRICT BEHAVIOUR). 41% of the S&P 500
+//   screens `unknown`, nearly all of it from two data issues that are more
+//   bookkeeping than missing data:
+//     (B) "TTM approximated from latest full fiscal year" — the figure IS
+//         known, it just came from the annual filing instead of four
+//         quarters (e.g. ADM: interest 0.6B / revenue 82.1B = 0.7%, passing
+//         comfortably), yet the note voids the whole verdict.
+//     (C) "Interest income not reported" — the company never files the line
+//         because the amount is immaterial. Note the inconsistency this
+//         creates: CPRT reports a literal 0 and screens `halal`, while ZTS
+//         omits the line and screens `unknown` despite passing both other
+//         ratios (debt 28%, cash 5%).
+//   Measured effect on `unknown`: B alone 41%->32%, C alone 41%->16%, both
+//   41%->6% (173 stocks move unknown->halal, and NOTHING flips to
+//   not_halal — these are purely a loosening). Kept strict because C assumes
+//   a number we don't have: our extractor checks three interest-income tags,
+//   so a company filing under a different tag would look "not reported" and
+//   could be wrongly called halal. Revisit only with per-company evidence.
 // - Switching to the 33% DJIM/S&P alternative for the two market-cap
 //   ratios is a one-line change here (debtToMarketCap /
 //   cashAndSecuritiesToMarketCap: 0.33), not a code change in

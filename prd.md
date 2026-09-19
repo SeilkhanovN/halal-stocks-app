@@ -465,7 +465,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Unknown ticker → 404 STOCK_NOT_FOUND in the standard error shape",
       "Route tests use app.inject() with a seeded in-memory DB"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M3 Detail panel"
   },
   {

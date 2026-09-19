@@ -2,6 +2,8 @@ import Fastify, { type FastifyInstance } from "fastify";
 import type { DatabaseSync } from "node:sqlite";
 import healthRoute from "./routes/health.js";
 import stocksListRoute from "./routes/stocks-list.js";
+import stockDetailRoute from "./routes/stock-detail.js";
+import stockHalalStatusRoute from "./routes/stock-halal-status.js";
 import { formatError, handleError } from "./lib/errors.js";
 import { createStocksRepo } from "./db/stocks-repo.js";
 
@@ -30,11 +32,16 @@ export function buildApp(opts: BuildAppOptions = {}): FastifyInstance {
 
   app.register(healthRoute);
 
-  // /stocks is only registered when a DB is injected — without one, the
-  // route falls through to the 404 handler above, matching BuildAppOptions'
-  // "db is optional" contract (health-only usage stays test-friendly).
+  // /stocks* routes are only registered when a DB is injected — without one,
+  // they fall through to the 404 handler above, matching BuildAppOptions'
+  // "db is optional" contract (health-only usage stays test-friendly). One
+  // shared repo is hoisted here rather than calling createStocksRepo(db)
+  // once per route, avoiding three separate prepared-statement sets.
   if (db !== undefined) {
-    app.register(stocksListRoute, { repo: createStocksRepo(db) });
+    const repo = createStocksRepo(db);
+    app.register(stocksListRoute, { repo });
+    app.register(stockDetailRoute, { repo });
+    app.register(stockHalalStatusRoute, { repo });
   }
 
   return app;

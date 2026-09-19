@@ -2,7 +2,7 @@
 // prd.md exactly (field names, orderings) and reuses HalalStatus from
 // types/halal.ts rather than redefining it.
 
-import type { HalalStatus } from "./halal.js";
+import type { HalalScreening, HalalStatus } from "./halal.js";
 
 export interface StockSummary {
   ticker: string;
@@ -12,6 +12,14 @@ export interface StockSummary {
   halalStatus: HalalStatus;
   isFavorite: boolean;
   screenedAt: string | null;
+}
+
+// GET /stocks/:ticker's response shape: every StockSummary field plus
+// marketCap and the full screening breakdown (also served standalone by
+// GET /stocks/:ticker/halal-status).
+export interface StockDetail extends StockSummary {
+  marketCap: number | null;
+  screening: HalalScreening;
 }
 
 export interface PaginationMeta {

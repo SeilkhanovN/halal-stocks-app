@@ -39,4 +39,5 @@ export interface ListStocksParams {
   page?: number
   limit?: number
   search?: string
+  status?: HalalStatus
 }

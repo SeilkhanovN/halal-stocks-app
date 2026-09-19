@@ -374,6 +374,76 @@ describe('StockSearch', () => {
     ).toHaveAttribute('aria-busy', 'false')
   })
 
+  it('selecting a status chip sends the status param; selecting "All" afterward sends no status key', async () => {
+    fetchStocksMock.mockResolvedValue(makeResponse())
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderWithClient(<StockSearch />)
+    await flush()
+
+    fetchStocksMock.mockClear()
+    fetchStocksMock.mockResolvedValue(makeResponse())
+
+    await user.click(screen.getByRole('radio', { name: 'Not halal' }))
+    await flush()
+
+    expect(fetchStocksMock).toHaveBeenLastCalledWith(
+      { page: 1, search: '', status: 'not_halal' },
+      expect.anything(),
+    )
+
+    fetchStocksMock.mockClear()
+    fetchStocksMock.mockResolvedValue(makeResponse())
+
+    await user.click(screen.getByRole('radio', { name: 'All' }))
+    await flush()
+
+    const lastCall = fetchStocksMock.mock.calls.at(-1)
+    expect(lastCall?.[0]).toEqual({ page: 1, search: '' })
+  })
+
+  it('selecting a status chip while on a later page fires exactly one request, resetting to page 1', async () => {
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ pagination: { page: 1, limit: 25, total: 100, totalPages: 5 } }),
+    )
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderWithClient(<StockSearch />)
+    await flush()
+
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ pagination: { page: 3, limit: 25, total: 100, totalPages: 5 } }),
+    )
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await flush()
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await flush()
+    expect(screen.getByText('Page 3 of 5')).toBeInTheDocument()
+
+    fetchStocksMock.mockClear()
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ pagination: { page: 1, limit: 25, total: 100, totalPages: 5 } }),
+    )
+
+    await user.click(screen.getByRole('radio', { name: 'Halal' }))
+    await flush()
+
+    expect(fetchStocksMock).toHaveBeenCalledTimes(1)
+    expect(fetchStocksMock).toHaveBeenCalledWith(
+      { page: 1, search: '', status: 'halal' },
+      expect.anything(),
+    )
+    expect(screen.getByText('Page 1 of 5')).toBeInTheDocument()
+  })
+
+  it('renders "Data as of <date>" from the response meta', async () => {
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ meta: { dataAsOf: '2026-01-15T12:00:00.000Z' } }),
+    )
+    renderWithClient(<StockSearch />)
+    await flush()
+
+    expect(screen.getByText(/^Data as of /)).toBeInTheDocument()
+  })
+
   it('recovers after a DATA_NOT_SEEDED error once Retry succeeds', async () => {
     fetchStocksMock.mockRejectedValueOnce(
       new ApiError(503, 'DATA_NOT_SEEDED', 'No stocks are seeded yet'),

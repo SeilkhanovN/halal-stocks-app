@@ -1,0 +1,30 @@
+.status-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.status-filter legend {
+  padding: 0;
+  font-weight: 600;
+  width: 100%;
+}
+
+.status-filter__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.status-filter__chip--selected {
+  border-color: currentColor;
+  font-weight: 600;
+}

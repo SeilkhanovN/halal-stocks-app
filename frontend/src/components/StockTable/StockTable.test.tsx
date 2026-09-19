@@ -37,4 +37,21 @@ describe('StockTable', () => {
       'true',
     )
   })
+
+  it('renders the halal status badge for each row', () => {
+    const withNotHalal: StockSummary[] = [
+      {
+        ticker: 'XOM',
+        name: 'Exxon Mobil Corp.',
+        exchange: 'NYSE',
+        industry: 'Energy',
+        halalStatus: 'not_halal',
+        isFavorite: false,
+        screenedAt: null,
+      },
+    ]
+    render(<StockTable stocks={withNotHalal} />)
+
+    expect(screen.getByText('Not halal')).toBeInTheDocument()
+  })
 })

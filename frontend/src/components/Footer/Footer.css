@@ -1,0 +1,11 @@
+.app-footer {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.app-footer p {
+  margin: 4px 0;
+}

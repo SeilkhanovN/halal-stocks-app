@@ -102,6 +102,9 @@ export function buildStocksQuery(params: ListStocksParams): string {
       qs.set('search', trimmed)
     }
   }
+  if (params.status !== undefined) {
+    qs.set('status', params.status)
+  }
 
   const qsString = qs.toString()
   return qsString === '' ? '' : `?${qsString}`

@@ -26,6 +26,14 @@ describe('buildStocksQuery', () => {
     const qs = buildStocksQuery({ search: 'brk b' })
     expect(qs).toBe('?search=brk+b')
   })
+
+  it('includes status when set', () => {
+    expect(buildStocksQuery({ status: 'not_halal' })).toBe('?status=not_halal')
+  })
+
+  it('omits status when not set', () => {
+    expect(buildStocksQuery({ search: 'aapl' })).toBe('?search=aapl')
+  })
 })
 
 describe('stockKeys.list', () => {

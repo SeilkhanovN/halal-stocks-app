@@ -445,7 +445,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Footer shows the disclaimer text and a formatted dataAsOf, or 'Data date unavailable' when null",
       "Tests mock the API; typecheck/lint/test/build pass in frontend/"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "BE-08",

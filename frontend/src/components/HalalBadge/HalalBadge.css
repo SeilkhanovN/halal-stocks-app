@@ -1,0 +1,63 @@
+.halal-badge {
+  --halal-badge-bg: transparent;
+  --halal-badge-border: var(--border);
+  --halal-badge-text: var(--text);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--halal-badge-border);
+  background: var(--halal-badge-bg);
+  color: var(--halal-badge-text);
+  font-size: 0.85em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.halal-badge__icon {
+  font-weight: 700;
+}
+
+/* halal: green */
+.halal-badge--halal {
+  --halal-badge-bg: #e6f4ea;
+  --halal-badge-border: #2f9e44;
+  --halal-badge-text: #1b5e20;
+}
+
+/* not_halal: red */
+.halal-badge--not_halal {
+  --halal-badge-bg: #fdecea;
+  --halal-badge-border: #d64545;
+  --halal-badge-text: #8a1f1f;
+}
+
+/* unknown: neutral amber — this is the largest real-data bucket (205/503),
+   not an error state, so it must never read as red/danger. */
+.halal-badge--unknown {
+  --halal-badge-bg: #fff8e1;
+  --halal-badge-border: #b8860b;
+  --halal-badge-text: #7a5b00;
+}
+
+@media (prefers-color-scheme: dark) {
+  .halal-badge--halal {
+    --halal-badge-bg: #163524;
+    --halal-badge-border: #3fae5a;
+    --halal-badge-text: #8fe3a8;
+  }
+
+  .halal-badge--not_halal {
+    --halal-badge-bg: #3a1e1e;
+    --halal-badge-border: #e06a6a;
+    --halal-badge-text: #f4a9a9;
+  }
+
+  .halal-badge--unknown {
+    --halal-badge-bg: #3a2f10;
+    --halal-badge-border: #d4a72c;
+    --halal-badge-text: #f0cd6b;
+  }
+}

@@ -31,4 +31,15 @@ export interface ListStocksQuery {
   page: number;
   limit: number;
   search?: string;
+  status?: string; // raw, unvalidated — the route validates against HALAL_STATUSES
+}
+
+// Single source of truth for the three halal-status literals a caller may
+// filter by. Deliberately not enforced via a JSON-schema `enum` in the
+// route (a blank status= must mean "no filter", same as search=) — the
+// route validates against this at runtime instead.
+export const HALAL_STATUSES: readonly HalalStatus[] = ["halal", "not_halal", "unknown"];
+
+export function isHalalStatus(value: string): value is HalalStatus {
+  return (HALAL_STATUSES as readonly string[]).includes(value);
 }

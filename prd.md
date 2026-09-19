@@ -414,7 +414,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "status=maybe → 400 VALIDATION_ERROR",
       "After `npm run seed:fixtures`, meta.dataAsOf is a non-null ISO timestamp"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "H-02",

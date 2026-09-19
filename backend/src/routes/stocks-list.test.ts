@@ -77,6 +77,19 @@ describe("GET /stocks", () => {
       const body = response.json() as ErrorBody;
       expect(body.error.message).toContain("seed:constituents");
     });
+
+    // Status validation happens before the empty-DB check, so an invalid
+    // status against an empty database must still surface as a 400
+    // VALIDATION_ERROR rather than being masked by 503 DATA_NOT_SEEDED (which
+    // the "returns 503 DATA_NOT_SEEDED" test above confirms is what a
+    // status-less request against the same empty DB returns instead).
+    it("status=maybe against an empty database -> 400 VALIDATION_ERROR, not 503", async () => {
+      const response = await app.inject({ method: "GET", url: "/stocks?status=maybe" });
+
+      expect(response.statusCode).toBe(400);
+      const body = response.json() as ErrorBody;
+      expect(body.error.code).toBe("VALIDATION_ERROR");
+    });
   });
 
   describe("seeded database", () => {
@@ -274,6 +287,117 @@ describe("GET /stocks", () => {
 
       expect(padded.statusCode).toBe(200);
       expect(padded.json()).toEqual(trimmed.json());
+    });
+
+    describe("status filter", () => {
+      // AAPL/MSFT screen halal (permissible industry, passing ratios); AAL/A
+      // screen not_halal via the "Banking" industry denylist, regardless of
+      // ratios. The rest of ALL_STOCKS stays identity-only ('unknown').
+      const NOT_HALAL_TICKERS = ["AAL", "A"];
+
+      function seedScreened(ticker: string, name: string, industry: string): void {
+        const screening = screen({
+          ticker,
+          industry,
+          marketCap: 1000,
+          totalDebt: 100,
+          cashAndSecurities: 50,
+          interestIncomeTtm: 1,
+          revenueTtm: 1000,
+          dataIssues: [],
+        });
+
+        createStocksRepo(db).upsert({
+          ticker,
+          name,
+          exchange: "NASDAQ",
+          industry,
+          cik: null,
+          marketCap: 1000,
+          totalDebt: 100,
+          cashAndSecurities: 50,
+          interestIncomeTtm: 1,
+          revenueTtm: 1000,
+          dataIssues: [],
+          halalStatus: screening.status,
+          screening,
+          screenedAt: "2026-09-01T00:00:00.000Z",
+          fetchError: null,
+        });
+      }
+
+      beforeEach(() => {
+        seedScreened("AAPL", "Apple Inc.", "Technology");
+        seedScreened("MSFT", "Microsoft", "Technology");
+        seedScreened("AAL", "American Airlines Group", "Banking");
+        seedScreened("A", "Agilent Technologies", "Banking");
+      });
+
+      it("status=not_halal returns only not_halal stocks with the correct total", async () => {
+        const [filtered, unfiltered] = await Promise.all([
+          app.inject({ method: "GET", url: "/stocks?status=not_halal" }),
+          app.inject({ method: "GET", url: "/stocks" }),
+        ]);
+
+        expect(filtered.statusCode).toBe(200);
+        const body = filtered.json() as Paginated<StockSummary>;
+        expect(body.pagination.total).toBe(NOT_HALAL_TICKERS.length);
+        for (const item of body.data) {
+          expect(item.halalStatus).toBe("not_halal");
+        }
+        expect(tickers(body).sort()).toEqual([...NOT_HALAL_TICKERS].sort());
+
+        expect(unfiltered.statusCode).toBe(200);
+        const unfilteredBody = unfiltered.json() as Paginated<StockSummary>;
+        expect(unfilteredBody.pagination.total).toBe(ALL_STOCKS.length);
+      });
+
+      it("status combines with search", async () => {
+        const response = await app.inject({ method: "GET", url: "/stocks?status=halal&search=aapl" });
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as Paginated<StockSummary>;
+        expect(tickers(body)).toEqual(["AAPL"]);
+        expect(body.pagination.total).toBe(1);
+      });
+
+      it("status combines with pagination", async () => {
+        const response = await app.inject({ method: "GET", url: "/stocks?status=halal&page=2&limit=1" });
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as Paginated<StockSummary>;
+        expect(body.pagination).toEqual({ page: 2, limit: 1, total: 2, totalPages: 2 });
+        expect(tickers(body)).toEqual(["MSFT"]);
+      });
+
+      it("status=maybe -> 400 VALIDATION_ERROR", async () => {
+        const response = await app.inject({ method: "GET", url: "/stocks?status=maybe" });
+
+        expect(response.statusCode).toBe(400);
+        const body = response.json() as ErrorBody;
+        expect(body.error.code).toBe("VALIDATION_ERROR");
+      });
+
+      it("status=HALAL -> 400 VALIDATION_ERROR (case sensitive, not normalized)", async () => {
+        const response = await app.inject({ method: "GET", url: "/stocks?status=HALAL" });
+
+        expect(response.statusCode).toBe(400);
+        const body = response.json() as ErrorBody;
+        expect(body.error.code).toBe("VALIDATION_ERROR");
+      });
+
+      it("a blank status= behaves exactly like omitting it", async () => {
+        const [noStatus, blankStatus] = await Promise.all([
+          app.inject({ method: "GET", url: "/stocks" }),
+          app.inject({ method: "GET", url: "/stocks?status=" }),
+        ]);
+
+        expect(blankStatus.statusCode).toBe(200);
+        const noStatusBody = noStatus.json() as Paginated<StockSummary>;
+        const blankStatusBody = blankStatus.json() as Paginated<StockSummary>;
+        expect(blankStatusBody.pagination.total).toBe(noStatusBody.pagination.total);
+        expect(tickers(blankStatusBody)).toEqual(tickers(noStatusBody));
+      });
     });
   });
 

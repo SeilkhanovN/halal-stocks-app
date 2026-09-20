@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StockDetailPanel } from './StockDetailPanel.tsx'
@@ -10,13 +10,15 @@ import type { Paginated, StockDetail, StockSummary } from '../../api/types.ts'
 
 vi.mock('../../api/client.ts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../api/client.ts')>()
-  return { ...actual, fetchStocks: vi.fn(), fetchStockDetail: vi.fn() }
+  return { ...actual, fetchStocks: vi.fn(), fetchStockDetail: vi.fn(), addFavorite: vi.fn(), removeFavorite: vi.fn() }
 })
 
 // Imported after the mock so these bindings are the mocked functions.
-const { fetchStocks, fetchStockDetail } = await import('../../api/client.ts')
+const { fetchStocks, fetchStockDetail, addFavorite, removeFavorite } = await import('../../api/client.ts')
 const fetchStocksMock = vi.mocked(fetchStocks)
 const fetchStockDetailMock = vi.mocked(fetchStockDetail)
+const addFavoriteMock = vi.mocked(addFavorite)
+const removeFavoriteMock = vi.mocked(removeFavorite)
 
 function renderWithClient(ui: ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -170,6 +172,8 @@ function makeUnknownDetail(): StockDetail {
 beforeEach(() => {
   fetchStocksMock.mockReset()
   fetchStockDetailMock.mockReset()
+  addFavoriteMock.mockReset()
+  removeFavoriteMock.mockReset()
 })
 
 afterEach(() => {
@@ -273,7 +277,11 @@ describe('StockDetailPanel', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('wraps Tab back to the close button when it is the only focusable element', async () => {
+  it('wraps Tab from the last focusable element (the favorite star) back to the close button', async () => {
+    // FavoriteButton (FE-04) added a second focusable element inside the
+    // panel, so Close is no longer the only one — this test now exercises
+    // the wrap-around across both instead of Close being a trivial no-op tab
+    // target.
     fetchStockDetailMock.mockResolvedValue(makeDetail())
     const user = userEvent.setup()
     renderWithClient(<StockDetailPanel ticker="AAPL" onClose={vi.fn()} />)
@@ -283,7 +291,9 @@ describe('StockDetailPanel', () => {
     await waitFor(() => expect(closeButton).toHaveFocus())
 
     await user.tab()
+    expect(screen.getByRole('button', { name: 'Add AAPL to favorites' })).toHaveFocus()
 
+    await user.tab()
     expect(closeButton).toHaveFocus()
   })
 
@@ -394,5 +404,59 @@ describe('StockDetailPanel via StockSearch (click-to-open, close, focus restorat
     await waitFor(() => {
       expect(screen.getByLabelText(/search by ticker or company/i)).toHaveFocus()
     })
+  })
+
+  it('flips the star in the panel and the table row underneath from the same shared cache, purely from the optimistic patch (no network round trip yet)', async () => {
+    fetchStocksMock.mockResolvedValue(makeStocksResponse())
+    fetchStockDetailMock.mockResolvedValue(makeDetail())
+
+    // A manually-resolvable promise (same pattern as FavoriteButton.test.tsx's
+    // double-click test) so we can assert the cross-cache flip BEFORE the
+    // mutation ever settles. If the assertion below only passed after
+    // resolving, it could just as easily be onSettled's invalidateQueries
+    // refetch fixing things up — not proof of the optimistic patch itself.
+    let resolveAddFavorite: (value: { ticker: string }) => void = () => {}
+    addFavoriteMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveAddFavorite = resolve
+        }),
+    )
+    const user = userEvent.setup()
+    renderWithClient(<StockSearch />)
+
+    await screen.findByText('AAPL')
+    expect(screen.getByRole('button', { name: 'Add AAPL to favorites' })).toBeInTheDocument()
+
+    const row = screen.getByRole('row', { name: /AAPL/i })
+    await user.click(row)
+    await screen.findByRole('dialog')
+
+    const dialog = screen.getByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Add AAPL to favorites' }))
+
+    // Still no network round trip: addFavoriteMock's promise is unresolved
+    // and the fetch mocks are still returning the original (not-favorited)
+    // data. If the table row's star has already flipped, it can only be
+    // from onMutate's cross-cache setQueriesData patch.
+    await waitFor(() => {
+      expect(within(row).getByRole('button', { name: 'Remove AAPL from favorites' })).toBeInTheDocument()
+    })
+    expect(within(dialog).getByRole('button', { name: 'Remove AAPL from favorites' })).toBeInTheDocument()
+
+    // Now let the mutation settle and reconfigure the fetch mocks so the
+    // subsequent onSettled refetch reflects a real backend having persisted
+    // the favorite.
+    fetchStocksMock.mockResolvedValue({
+      ...makeStocksResponse(),
+      data: makeStocksResponse().data.map((s) => ({ ...s, isFavorite: true })),
+    })
+    fetchStockDetailMock.mockResolvedValue(makeDetail({ isFavorite: true }))
+    await waitFor(() => resolveAddFavorite({ ticker: 'AAPL' }))
+
+    await waitFor(() => {
+      expect(within(dialog).getByRole('button', { name: 'Remove AAPL from favorites' })).toBeInTheDocument()
+    })
+    expect(within(row).getByRole('button', { name: 'Remove AAPL from favorites' })).toBeInTheDocument()
   })
 })

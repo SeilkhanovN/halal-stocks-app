@@ -105,6 +105,12 @@ export function buildStocksQuery(params: ListStocksParams): string {
   if (params.status !== undefined) {
     qs.set('status', params.status)
   }
+  // Deliberately `=== true`, not truthy: both `false` and `undefined` omit
+  // the param so it's absent whenever the toggle is off, regardless of
+  // whether the caller passes `false` or leaves it unset.
+  if (params.favoritesOnly === true) {
+    qs.set('favoritesOnly', 'true')
+  }
 
   const qsString = qs.toString()
   return qsString === '' ? '' : `?${qsString}`
@@ -139,6 +145,27 @@ export async function fetchStockDetail(ticker: string, signal?: AbortSignal): Pr
     throw new ApiError(0, 'EMPTY_RESPONSE', 'Expected a response body from GET /stocks/:ticker')
   }
   return body.data
+}
+
+// POST /favorites/:ticker wraps its payload in { data: { ticker } }, mirroring
+// GET /stocks/:ticker's envelope — unwrapped here so callers just get the
+// ticker.
+export async function addFavorite(ticker: string, signal?: AbortSignal): Promise<{ ticker: string }> {
+  const body = await request<{ data: { ticker: string } }>(`/favorites/${encodeURIComponent(ticker)}`, {
+    method: 'POST',
+    signal,
+  })
+  if (body === undefined) {
+    // POST /favorites/:ticker always returns a body; this only guards the
+    // type and should never be reachable in practice.
+    throw new ApiError(0, 'EMPTY_RESPONSE', 'Expected a response body from POST /favorites/:ticker')
+  }
+  return body.data
+}
+
+// DELETE /favorites/:ticker returns 204 No Content on success.
+export async function removeFavorite(ticker: string, signal?: AbortSignal): Promise<void> {
+  await request<void>(`/favorites/${encodeURIComponent(ticker)}`, { method: 'DELETE', signal })
 }
 
 export function shouldRetryQuery(failureCount: number, error: unknown): boolean {

@@ -6,6 +6,7 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue.ts'
 import { StockTable } from '../StockTable/StockTable.tsx'
 import { Pagination } from '../Pagination/Pagination.tsx'
 import { StatusFilter, STATUS_OPTION_LABELS, type StatusFilterValue } from '../StatusFilter/StatusFilter.tsx'
+import { FavoritesToggle } from '../FavoritesToggle/FavoritesToggle.tsx'
 import { StockDetailPanel } from '../StockDetailPanel/StockDetailPanel.tsx'
 import { Footer } from '../Footer/Footer.tsx'
 import type { Paginated, StockSummary } from '../../api/types.ts'
@@ -14,6 +15,7 @@ export function StockSearch() {
   const [searchText, setSearchText] = useState('')
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<StatusFilterValue>('all')
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
 
@@ -34,6 +36,7 @@ export function StockSearch() {
     page,
     search: debouncedSearch,
     status: status === 'all' ? undefined : status,
+    favoritesOnly: favoritesOnly ? true : undefined,
   })
 
   function handleSearchChange(next: string) {
@@ -47,6 +50,14 @@ export function StockSearch() {
   // fetch (page N -> 1, status old -> new in a single render).
   function handleStatusChange(next: StatusFilterValue) {
     setStatus(next)
+    setPage(1)
+  }
+
+  // Follows the `status` pattern, not the `search` pattern: a checkbox
+  // toggle is already a settled value the instant onChange fires, so there's
+  // no debounce gap to bridge like `lastSettledSearch` does.
+  function handleFavoritesOnlyChange(next: boolean) {
+    setFavoritesOnly(next)
     setPage(1)
   }
 
@@ -101,6 +112,8 @@ export function StockSearch() {
         </div>
 
         <StatusFilter value={status} onChange={handleStatusChange} />
+
+        <FavoritesToggle checked={favoritesOnly} onChange={handleFavoritesOnlyChange} />
 
         <p className="stock-search__status" aria-live="polite">
           {renderStatus({ isPending, isError, error, data, debouncedSearch, status })}

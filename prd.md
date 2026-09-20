@@ -548,7 +548,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Favorites-only toggle sends favoritesOnly=true and omits it when off; toggling it on page 3 resets to page 1",
       "Toggling the star inside the detail panel updates the table row star too (shared cache)"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M4 Favorites"
   },
   {

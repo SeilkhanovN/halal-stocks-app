@@ -40,6 +40,7 @@ export interface ListStocksParams {
   limit?: number
   search?: string
   status?: HalalStatus
+  favoritesOnly?: boolean
 }
 
 export type RatioKey = 'debtToMarketCap' | 'cashAndSecuritiesToMarketCap' | 'interestIncomeToRevenue'

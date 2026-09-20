@@ -1,6 +1,7 @@
 import type { KeyboardEvent, SyntheticEvent } from 'react'
 import './StockTable.css'
 import { HalalBadge } from '../HalalBadge/HalalBadge.tsx'
+import { FavoriteButton } from '../FavoriteButton/FavoriteButton.tsx'
 import type { StockSummary } from '../../api/types.ts'
 
 interface StockTableProps {
@@ -26,6 +27,7 @@ export function StockTable({ stocks, isFetching, onRowActivate }: StockTableProp
             <th scope="col">Ticker</th>
             <th scope="col">Company</th>
             <th scope="col">Halal status</th>
+            <th scope="col">Favorite</th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +49,9 @@ export function StockTable({ stocks, isFetching, onRowActivate }: StockTableProp
               <td>{stock.name}</td>
               <td>
                 <HalalBadge status={stock.halalStatus} />
+              </td>
+              <td>
+                <FavoriteButton ticker={stock.ticker} isFavorite={stock.isFavorite} />
               </td>
             </tr>
           ))}

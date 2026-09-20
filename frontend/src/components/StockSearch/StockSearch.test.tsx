@@ -9,12 +9,14 @@ import type { Paginated, StockSummary } from '../../api/types.ts'
 
 vi.mock('../../api/client.ts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../api/client.ts')>()
-  return { ...actual, fetchStocks: vi.fn() }
+  return { ...actual, fetchStocks: vi.fn(), addFavorite: vi.fn(), removeFavorite: vi.fn() }
 })
 
-// Imported after the mock so this binding is the mocked function.
-const { fetchStocks } = await import('../../api/client.ts')
+// Imported after the mock so these bindings are the mocked functions.
+const { fetchStocks, addFavorite, removeFavorite } = await import('../../api/client.ts')
 const fetchStocksMock = vi.mocked(fetchStocks)
+const addFavoriteMock = vi.mocked(addFavorite)
+const removeFavoriteMock = vi.mocked(removeFavorite)
 
 function renderWithClient(ui: ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -62,6 +64,8 @@ beforeEach(() => {
   // so explicit vi.advanceTimersByTimeAsync() calls still control it.
   vi.useFakeTimers({ shouldAdvanceTime: true })
   fetchStocksMock.mockReset()
+  addFavoriteMock.mockReset()
+  removeFavoriteMock.mockReset()
 })
 
 afterEach(() => {
@@ -442,6 +446,118 @@ describe('StockSearch', () => {
     await flush()
 
     expect(screen.getByText(/^Data as of /)).toBeInTheDocument()
+  })
+
+  it('checking Favorites only sends favoritesOnly:true; unchecking sends no favoritesOnly key', async () => {
+    fetchStocksMock.mockResolvedValue(makeResponse())
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderWithClient(<StockSearch />)
+    await flush()
+
+    fetchStocksMock.mockClear()
+    fetchStocksMock.mockResolvedValue(makeResponse())
+
+    await user.click(screen.getByRole('checkbox', { name: /favorites only/i }))
+    await flush()
+
+    expect(fetchStocksMock).toHaveBeenLastCalledWith(
+      { page: 1, search: '', favoritesOnly: true },
+      expect.anything(),
+    )
+
+    fetchStocksMock.mockClear()
+    fetchStocksMock.mockResolvedValue(makeResponse())
+
+    await user.click(screen.getByRole('checkbox', { name: /favorites only/i }))
+    await flush()
+
+    const lastCall = fetchStocksMock.mock.calls.at(-1)
+    expect(lastCall?.[0]).toEqual({ page: 1, search: '' })
+  })
+
+  it('checking Favorites only while on a later page fires exactly one request, resetting to page 1', async () => {
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ pagination: { page: 1, limit: 25, total: 100, totalPages: 5 } }),
+    )
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderWithClient(<StockSearch />)
+    await flush()
+
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ pagination: { page: 3, limit: 25, total: 100, totalPages: 5 } }),
+    )
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await flush()
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await flush()
+    expect(screen.getByText('Page 3 of 5')).toBeInTheDocument()
+
+    fetchStocksMock.mockClear()
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ pagination: { page: 1, limit: 25, total: 100, totalPages: 5 } }),
+    )
+
+    await user.click(screen.getByRole('checkbox', { name: /favorites only/i }))
+    await flush()
+
+    expect(fetchStocksMock).toHaveBeenCalledTimes(1)
+    expect(fetchStocksMock).toHaveBeenCalledWith(
+      { page: 1, search: '', favoritesOnly: true },
+      expect.anything(),
+    )
+    expect(screen.getByText('Page 1 of 5')).toBeInTheDocument()
+  })
+
+  it('unfavoriting a row under the Favorites only filter keeps it visible (empty star) until the refetch confirms removal', async () => {
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({
+        data: [
+          {
+            ticker: 'AAPL',
+            name: 'Apple Inc.',
+            exchange: 'NASDAQ',
+            industry: 'Technology Hardware',
+            halalStatus: 'unknown',
+            isFavorite: true,
+            screenedAt: null,
+          },
+        ],
+      }),
+    )
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderWithClient(<StockSearch />)
+    await flush()
+
+    await user.click(screen.getByRole('checkbox', { name: /favorites only/i }))
+    await flush()
+
+    expect(screen.getByRole('button', { name: 'Remove AAPL from favorites' })).toBeInTheDocument()
+
+    let resolveRemove: () => void = () => {}
+    removeFavoriteMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRemove = () => resolve(undefined)
+        }),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Remove AAPL from favorites' }))
+
+    // Optimistic update only: the row must still be present (star now empty)
+    // even though the active query is favoritesOnly=true, because removal is
+    // only allowed to happen once the invalidated refetch confirms it.
+    expect(screen.getByText('AAPL')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add AAPL to favorites' })).toBeInTheDocument()
+
+    // The refetch triggered once the mutation settles returns a page with no
+    // favorites left.
+    fetchStocksMock.mockResolvedValue(
+      makeResponse({ data: [], pagination: { page: 1, limit: 25, total: 0, totalPages: 0 } }),
+    )
+    resolveRemove()
+    await flush()
+
+    expect(screen.queryByText('AAPL')).not.toBeInTheDocument()
   })
 
   it('recovers after a DATA_NOT_SEEDED error once Retry succeeds', async () => {

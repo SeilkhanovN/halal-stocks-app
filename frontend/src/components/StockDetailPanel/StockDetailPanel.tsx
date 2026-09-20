@@ -3,6 +3,7 @@ import './StockDetailPanel.css'
 import { ApiError } from '../../api/client.ts'
 import { useStockDetail } from '../../hooks/useStockDetail.ts'
 import { HalalBadge } from '../HalalBadge/HalalBadge.tsx'
+import { FavoriteButton } from '../FavoriteButton/FavoriteButton.tsx'
 import { RatioRow } from '../RatioRow/RatioRow.tsx'
 import { DISCLAIMER } from '../Footer/Footer.tsx'
 import type { StockDetail } from '../../api/types.ts'
@@ -62,6 +63,7 @@ function StockDetailBody({ data, isFetching }: StockDetailBodyProps) {
         {data.ticker} · {data.exchange ?? 'Exchange unknown'} · {data.industry ?? 'Industry unavailable'}
       </p>
       <HalalBadge status={data.halalStatus} />
+      <FavoriteButton ticker={data.ticker} isFavorite={data.isFavorite} />
       <p className="stock-detail-panel__market-cap">{formatMarketCap(data.marketCap)}</p>
 
       <section>

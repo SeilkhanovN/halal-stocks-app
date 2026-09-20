@@ -16,8 +16,9 @@ interface StocksListRouteOptions {
 
 // Copies exactly the 7 StockSummary fields off a DB row — no spread, so a
 // future column added to StockRecord can never leak into the API response
-// unnoticed.
-function toStockSummary(record: StockRecordWithFavorite): StockSummary {
+// unnoticed. Exported for reuse by favorites-list.ts, whose StockSummary
+// shape is identical.
+export function toStockSummary(record: StockRecordWithFavorite): StockSummary {
   return {
     ticker: record.ticker,
     name: record.name,
@@ -48,6 +49,11 @@ const stocksListRoute: FastifyPluginAsync<StocksListRouteOptions> = async (app, 
             // filter", the same way search= already behaves. Validated
             // manually below so the error shape stays VALIDATION_ERROR.
             status: { type: "string", maxLength: 20 },
+            // Same rationale as status: a blank favoritesOnly= must mean "no
+            // filter" (the contract's own example), so this can't be a
+            // JSON-schema boolean (AJV would reject a blank string).
+            // Validated manually below.
+            favoritesOnly: { type: "string", maxLength: 20 },
           },
         },
       },
@@ -73,6 +79,26 @@ const stocksListRoute: FastifyPluginAsync<StocksListRouteOptions> = async (app, 
         status = trimmedStatus;
       }
 
+      // Case-sensitive, same precedent as status above: "true" filters,
+      // "false" is accepted but behaviorally identical to omitting it
+      // (stocks-repo.list() only branches on `=== true`), anything else
+      // (including "TRUE"/"1"/"yes") is a 400.
+      let favoritesOnly: boolean | undefined;
+      const trimmedFavoritesOnly = request.query.favoritesOnly?.trim();
+      if (trimmedFavoritesOnly !== undefined && trimmedFavoritesOnly !== "") {
+        if (trimmedFavoritesOnly === "true") {
+          favoritesOnly = true;
+        } else if (trimmedFavoritesOnly === "false") {
+          favoritesOnly = false;
+        } else {
+          throw new AppError(
+            "VALIDATION_ERROR",
+            400,
+            "favoritesOnly must be 'true' or 'false'",
+          );
+        }
+      }
+
       if (repo.count() === 0) {
         throw new AppError(
           "DATA_NOT_SEEDED",
@@ -86,6 +112,7 @@ const stocksListRoute: FastifyPluginAsync<StocksListRouteOptions> = async (app, 
         limit,
         ...(hasSearch ? { search: trimmedSearch } : {}),
         ...(status !== undefined ? { status } : {}),
+        ...(favoritesOnly !== undefined ? { favoritesOnly } : {}),
       });
 
       return {

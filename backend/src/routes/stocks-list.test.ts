@@ -90,6 +90,17 @@ describe("GET /stocks", () => {
       const body = response.json() as ErrorBody;
       expect(body.error.code).toBe("VALIDATION_ERROR");
     });
+
+    // favoritesOnly validation happens before the empty-DB check, mirroring
+    // status=maybe above, so an invalid favoritesOnly against an empty
+    // database must still surface as 400 rather than 503.
+    it("favoritesOnly=notabool against an empty database -> 400 VALIDATION_ERROR, not 503", async () => {
+      const response = await app.inject({ method: "GET", url: "/stocks?favoritesOnly=notabool" });
+
+      expect(response.statusCode).toBe(400);
+      const body = response.json() as ErrorBody;
+      expect(body.error.code).toBe("VALIDATION_ERROR");
+    });
   });
 
   describe("seeded database", () => {
@@ -397,6 +408,72 @@ describe("GET /stocks", () => {
         const blankStatusBody = blankStatus.json() as Paginated<StockSummary>;
         expect(blankStatusBody.pagination.total).toBe(noStatusBody.pagination.total);
         expect(tickers(blankStatusBody)).toEqual(tickers(noStatusBody));
+      });
+    });
+
+    describe("favoritesOnly filter", () => {
+      it("favoritesOnly=true includes a favorited stock, and it disappears after unfavoriting", async () => {
+        const postResponse = await app.inject({ method: "POST", url: "/favorites/AAPL" });
+        expect(postResponse.statusCode).toBe(201);
+
+        const filtered = await app.inject({ method: "GET", url: "/stocks?favoritesOnly=true" });
+        expect(filtered.statusCode).toBe(200);
+        const filteredBody = filtered.json() as Paginated<StockSummary>;
+        expect(tickers(filteredBody)).toContain("AAPL");
+        // Direct proof the filter is actually narrowing the result set (not a
+        // no-op): only one stock is favorited, so the total must be 1, not
+        // the full 35-stock seeded count.
+        expect(filteredBody.pagination.total).toBe(1);
+
+        const deleteResponse = await app.inject({ method: "DELETE", url: "/favorites/AAPL" });
+        expect(deleteResponse.statusCode).toBe(204);
+
+        const afterDelete = await app.inject({ method: "GET", url: "/stocks?favoritesOnly=true" });
+        const afterDeleteBody = afterDelete.json() as Paginated<StockSummary>;
+        expect(tickers(afterDeleteBody)).not.toContain("AAPL");
+        expect(afterDeleteBody.pagination.total).toBe(0);
+      });
+
+      it("favoritesOnly=notabool -> 400 VALIDATION_ERROR", async () => {
+        const response = await app.inject({ method: "GET", url: "/stocks?favoritesOnly=notabool" });
+
+        expect(response.statusCode).toBe(400);
+        const body = response.json() as ErrorBody;
+        expect(body.error.code).toBe("VALIDATION_ERROR");
+      });
+
+      it("favoritesOnly=TRUE -> 400 VALIDATION_ERROR (case sensitive, not normalized)", async () => {
+        const response = await app.inject({ method: "GET", url: "/stocks?favoritesOnly=TRUE" });
+
+        expect(response.statusCode).toBe(400);
+        const body = response.json() as ErrorBody;
+        expect(body.error.code).toBe("VALIDATION_ERROR");
+      });
+
+      it("a blank favoritesOnly= behaves exactly like omitting it", async () => {
+        const [noFilter, blankFilter] = await Promise.all([
+          app.inject({ method: "GET", url: "/stocks" }),
+          app.inject({ method: "GET", url: "/stocks?favoritesOnly=" }),
+        ]);
+
+        expect(blankFilter.statusCode).toBe(200);
+        const noFilterBody = noFilter.json() as Paginated<StockSummary>;
+        const blankFilterBody = blankFilter.json() as Paginated<StockSummary>;
+        expect(blankFilterBody.pagination.total).toBe(noFilterBody.pagination.total);
+        expect(tickers(blankFilterBody)).toEqual(tickers(noFilterBody));
+      });
+
+      it("favoritesOnly=false behaves exactly like omitting it", async () => {
+        const [noFilter, falseFilter] = await Promise.all([
+          app.inject({ method: "GET", url: "/stocks" }),
+          app.inject({ method: "GET", url: "/stocks?favoritesOnly=false" }),
+        ]);
+
+        expect(falseFilter.statusCode).toBe(200);
+        const noFilterBody = noFilter.json() as Paginated<StockSummary>;
+        const falseFilterBody = falseFilter.json() as Paginated<StockSummary>;
+        expect(falseFilterBody.pagination.total).toBe(noFilterBody.pagination.total);
+        expect(tickers(falseFilterBody)).toEqual(tickers(noFilterBody));
       });
     });
   });

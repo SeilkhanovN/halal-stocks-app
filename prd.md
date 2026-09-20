@@ -516,7 +516,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "Favorites persist across buildApp instances sharing the same file DB (tested with a temp file)",
       "GET /stocks?favoritesOnly=notabool → 400 VALIDATION_ERROR"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M4 Favorites"
   },
   {

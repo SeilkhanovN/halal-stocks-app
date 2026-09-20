@@ -40,6 +40,7 @@ export interface ListStocksQuery {
   limit: number;
   search?: string;
   status?: string; // raw, unvalidated — the route validates against HALAL_STATUSES
+  favoritesOnly?: string; // raw, unvalidated — the route validates 'true'/'false'
 }
 
 // Single source of truth for the three halal-status literals a caller may

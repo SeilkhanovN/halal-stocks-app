@@ -566,7 +566,7 @@ FE-01 → MVP-03; FE-02 → MVP-04 + H-02; FE-03 → MVP-04 + H-02 + FE-04.
       "The README states the thresholds and matches config/screening.ts values",
       "The end-to-end checks from prompt.md 'How to verify' pass and are recorded in activity.md with the date"
     ],
-    "passes": false,
+    "passes": true,
     "milestone": "M5 Docs & full verification"
   }
 ]

@@ -9,8 +9,8 @@ interface HalalBadgeProps {
 // should not depend on StatusFilter's STATUS_OPTION_LABELS, even though the
 // label text happens to match.
 const LABELS: Record<HalalStatus, string> = {
-  halal: 'Halal',
-  not_halal: 'Not halal',
+  halal: 'Compliant',
+  not_halal: 'Non-compliant',
   unknown: 'Unknown',
 }
 

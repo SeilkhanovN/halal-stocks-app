@@ -13,7 +13,7 @@ vi.mock('./api/client.ts', async (importOriginal) => {
 })
 
 describe('App', () => {
-  it('renders the app shell with a "Halal Stocks" heading', () => {
+  it('renders the app shell with a "Stock Compliance" heading', () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
     render(
@@ -22,6 +22,6 @@ describe('App', () => {
       </QueryClientProvider>,
     )
 
-    expect(screen.getByRole('heading', { name: /halal stocks/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /stock compliance/i })).toBeInTheDocument()
   })
 })

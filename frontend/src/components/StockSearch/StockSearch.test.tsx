@@ -387,7 +387,7 @@ describe('StockSearch', () => {
     fetchStocksMock.mockClear()
     fetchStocksMock.mockResolvedValue(makeResponse())
 
-    await user.click(screen.getByRole('radio', { name: 'Not halal' }))
+    await user.click(screen.getByRole('radio', { name: 'Non-compliant' }))
     await flush()
 
     expect(fetchStocksMock).toHaveBeenLastCalledWith(
@@ -427,7 +427,7 @@ describe('StockSearch', () => {
       makeResponse({ pagination: { page: 1, limit: 25, total: 100, totalPages: 5 } }),
     )
 
-    await user.click(screen.getByRole('radio', { name: 'Halal' }))
+    await user.click(screen.getByRole('radio', { name: 'Compliant' }))
     await flush()
 
     expect(fetchStocksMock).toHaveBeenCalledTimes(1)

@@ -1,6 +1,6 @@
 # backend
 
-Node.js + TypeScript + Fastify API for halal-stocks. Serves stock data,
+Node.js + TypeScript + Fastify API for Stock Compliance. Serves stock data,
 halal screening verdicts, and favorites — always from its own SQLite
 database, never by calling an external API at request time.
 

@@ -4,11 +4,11 @@ import userEvent from '@testing-library/user-event'
 import { StatusFilter } from './StatusFilter.tsx'
 
 describe('StatusFilter', () => {
-  it('renders a radiogroup with the accessible name "Filter by halal status"', () => {
+  it('renders a radiogroup with the accessible name "Filter by compliance status"', () => {
     render(<StatusFilter value="all" onChange={vi.fn()} />)
 
     expect(
-      screen.getByRole('radiogroup', { name: /filter by halal status/i }),
+      screen.getByRole('radiogroup', { name: /filter by compliance status/i }),
     ).toBeInTheDocument()
   })
 
@@ -17,17 +17,17 @@ describe('StatusFilter', () => {
 
     expect(screen.getAllByRole('radio')).toHaveLength(4)
     expect(screen.getByRole('radio', { name: 'All' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: 'Halal' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: 'Not halal' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Compliant' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Non-compliant' })).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: 'Unknown' })).toBeInTheDocument()
   })
 
-  it('calls onChange("not_halal") when "Not halal" is clicked', async () => {
+  it('calls onChange("not_halal") when "Non-compliant" is clicked', async () => {
     const onChange = vi.fn()
     const user = userEvent.setup()
     render(<StatusFilter value="all" onChange={onChange} />)
 
-    await user.click(screen.getByRole('radio', { name: 'Not halal' }))
+    await user.click(screen.getByRole('radio', { name: 'Non-compliant' }))
 
     expect(onChange).toHaveBeenCalledWith('not_halal')
   })
@@ -51,7 +51,7 @@ describe('StatusFilter', () => {
     // grouping). jsdom does not implement the arrow-key-moves-focus behavior
     // itself (that's UA chrome, not DOM/ARIA), so per the spec's jsdom note
     // this test does not simulate ArrowRight. Instead it confirms Tab reaches
-    // the group's checked radio, then focuses the unchecked "Not halal"
+    // the group's checked radio, then focuses the unchecked "Non-compliant"
     // radio directly (standing in for the arrow-key move a real browser would
     // perform) and asserts Space activates it and fires onChange — proving
     // the keyboard activation handler itself works correctly.
@@ -62,7 +62,7 @@ describe('StatusFilter', () => {
     await user.tab()
     expect(screen.getByRole('radio', { name: 'All' })).toHaveFocus()
 
-    screen.getByRole('radio', { name: 'Not halal' }).focus()
+    screen.getByRole('radio', { name: 'Non-compliant' }).focus()
     await user.keyboard(' ')
 
     expect(onChange).toHaveBeenCalledWith('not_halal')

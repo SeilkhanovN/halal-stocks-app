@@ -10,8 +10,8 @@ interface StatusFilterProps {
 
 // eslint-disable-next-line react-refresh/only-export-components -- constant shared with StockSearch's empty-state copy; not a component export.
 export const STATUS_OPTION_LABELS: Record<HalalStatus, string> = {
-  halal: 'Halal',
-  not_halal: 'Not halal',
+  halal: 'Compliant',
+  not_halal: 'Non-compliant',
   unknown: 'Unknown',
 }
 
@@ -25,7 +25,7 @@ const OPTIONS: { value: StatusFilterValue; label: string }[] = [
 export function StatusFilter({ value, onChange }: StatusFilterProps) {
   return (
     <fieldset role="radiogroup" className="status-filter">
-      <legend>Filter by halal status</legend>
+      <legend>Filter by compliance status</legend>
       {OPTIONS.map((option) => {
         const checked = option.value === value
         return (

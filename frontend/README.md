@@ -1,6 +1,6 @@
 # frontend
 
-React + TypeScript + Vite UI for halal-stocks: search, halal/not-halal/
+React + TypeScript + Vite UI for Stock Compliance: search, compliant/non-compliant/
 unknown badges, a detail panel per stock, and favorites.
 
 ## Prerequisites
@@ -58,8 +58,8 @@ frontend/
 │   │   ├── StockSearch/        # search input + page state (debounce, status, favoritesOnly)
 │   │   ├── StockTable/         # ticker/name/industry/badge/★ table
 │   │   ├── Pagination/         # Prev/Next, "Page X of Y"
-│   │   ├── HalalBadge/         # Halal/Not halal/Unknown badge
-│   │   ├── StatusFilter/       # All/Halal/Not halal/Unknown radio chips
+│   │   ├── HalalBadge/         # Compliant/Non-compliant/Unknown badge
+│   │   ├── StatusFilter/       # All/Compliant/Non-compliant/Unknown radio chips
 │   │   ├── Footer/             # disclaimer + "Data as of <date>"
 │   │   ├── StockDetailPanel/   # per-stock ratio/business-activity/reasons panel
 │   │   ├── RatioRow/           # one ratio vs its threshold, with a visual bar

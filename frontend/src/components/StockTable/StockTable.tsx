@@ -26,7 +26,7 @@ export function StockTable({ stocks, isFetching, onRowActivate }: StockTableProp
           <tr>
             <th scope="col">Ticker</th>
             <th scope="col">Company</th>
-            <th scope="col">Halal status</th>
+            <th scope="col">Compliance</th>
             <th scope="col">Favorite</th>
           </tr>
         </thead>

@@ -1,7 +1,7 @@
-# Halal Stocks — MVP
+# Stock Compliance — MVP
 
-A stock list you can search by ticker or company name, with a halal /
-not-halal / unknown badge, a detail panel explaining the verdict, and
+A stock list you can search by ticker or company name, with a compliant /
+non-compliant / unknown badge, a detail panel explaining the verdict, and
 favorites. Two independent services meant to be dockerized separately
 later: `backend/` (Fastify API) and `frontend/` (React UI).
 
@@ -11,7 +11,7 @@ later: `backend/` (Fastify API) and `frontend/` (React UI).
 `activity.md` for the dated history of how each piece landed):
 
 - Search by ticker or company name, debounced, paginated.
-- A halal / not-halal / unknown badge per stock, plus a status filter.
+- A compliant / non-compliant / unknown badge per stock, plus a status filter.
 - Favorite/unfavorite a stock, with a "favorites only" toggle — persisted
   in SQLite.
 - A detail panel per stock: each AAOIFI ratio vs its limit, the
@@ -35,7 +35,7 @@ node --version   # need Node 24+
   - A [Finnhub](https://finnhub.io/register) free-tier API key.
   - A SEC EDGAR `User-Agent` string identifying you, per SEC's fair-access
     policy — app name plus a contact email, e.g.
-    `"HalalStocksApp contact@example.com"` (use your own contact address,
+    `"StockCompliance contact@example.com"` (use your own contact address,
     not this placeholder).
 
 ## Quick start
@@ -98,8 +98,8 @@ For a fast smoke run instead of the full ~35 minutes, use
 - Search by ticker (e.g. `aapl`) or company name (e.g. `microsoft`),
   case-insensitive, debounced 250 ms after you stop typing.
 - Page through results with Prev/Next.
-- See a Halal / Not halal / Unknown badge on every row, and filter the
-  list with the status chips (All / Halal / Not halal / Unknown).
+- See a Compliant / Non-compliant / Unknown badge on every row, and filter the
+  list with the status chips (All / Compliant / Non-compliant / Unknown).
 - Star a stock to favorite it (updates instantly), and toggle "Favorites
   only" to see just your starred stocks.
 - Click (or press Enter on) a row to open its detail panel: each ratio

@@ -61,7 +61,7 @@ describe('StockTable', () => {
     )
   })
 
-  it('renders the halal status badge for each row', () => {
+  it('renders the compliance status badge for each row', () => {
     const withNotHalal: StockSummary[] = [
       {
         ticker: 'XOM',
@@ -75,7 +75,13 @@ describe('StockTable', () => {
     ]
     renderWithClient(<StockTable stocks={withNotHalal} onRowActivate={noop} />)
 
-    expect(screen.getByText('Not halal')).toBeInTheDocument()
+    expect(screen.getByText('Non-compliant')).toBeInTheDocument()
+  })
+
+  it('renders the "Compliance" column header', () => {
+    renderWithClient(<StockTable stocks={stocks} onRowActivate={noop} />)
+
+    expect(screen.getByRole('columnheader', { name: 'Compliance' })).toBeInTheDocument()
   })
 
   it('calls onRowActivate with the ticker when a row is clicked', async () => {

@@ -3,17 +3,17 @@ import { render, screen } from '@testing-library/react'
 import { HalalBadge } from './HalalBadge.tsx'
 
 describe('HalalBadge', () => {
-  it('renders the "Halal" label inside a halal-badge--halal element', () => {
+  it('renders the "Compliant" label inside a halal-badge--halal element', () => {
     render(<HalalBadge status="halal" />)
 
-    const label = screen.getByText('Halal')
+    const label = screen.getByText('Compliant')
     expect(label.closest('.halal-badge--halal')).not.toBeNull()
   })
 
-  it('renders the "Not halal" label inside a halal-badge--not_halal element', () => {
+  it('renders the "Non-compliant" label inside a halal-badge--not_halal element', () => {
     render(<HalalBadge status="not_halal" />)
 
-    const label = screen.getByText('Not halal')
+    const label = screen.getByText('Non-compliant')
     expect(label.closest('.halal-badge--not_halal')).not.toBeNull()
   })
 

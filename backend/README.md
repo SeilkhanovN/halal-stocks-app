@@ -1,7 +1,7 @@
 # backend
 
 Node.js + TypeScript + Fastify API for Stock Compliance. Serves stock data,
-halal screening verdicts, and favorites — always from its own SQLite
+compliance screening verdicts, and favorites — always from its own SQLite
 database, never by calling an external API at request time.
 
 ## Prerequisites

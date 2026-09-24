@@ -67,14 +67,18 @@ Then open http://localhost:5173.
 `seed:fixtures` screens 6 known-answer stocks from checked-in fixture
 data (no network calls), which doubles as a smoke test:
 
-| Ticker | Status | Why |
-|---|---|---|
-| AAPL | halal | passes all three ratios |
-| JPM | not_halal | prohibited industry (Banking) |
-| T | not_halal | debt/market cap breach |
-| STZ | not_halal | ticker-level denylist (alcohol producer) |
-| ASML | unknown | IFRS filer, no US-GAAP financials |
-| NO_INTEREST | unknown | interest income not reported |
+| Ticker | Shows as | Stored value | Why |
+|---|---|---|---|
+| AAPL | Compliant | `halal` | passes all three ratios |
+| JPM | Non-compliant | `not_halal` | prohibited industry (Banking) |
+| T | Non-compliant | `not_halal` | debt/market cap breach |
+| STZ | Non-compliant | `not_halal` | ticker-level denylist (alcohol producer) |
+| ASML | Unknown | `unknown` | IFRS filer, no US-GAAP financials |
+| NO_INTEREST | Unknown | `unknown` | interest income not reported |
+
+The UI labels verdicts Compliant / Non-compliant / Unknown. The API and the
+database use `halal` / `not_halal` / `unknown` — the wire format kept its
+original names, so the two columns above differ on purpose.
 
 ### Live (optional, real data, needs keys, ~35 min)
 
@@ -114,7 +118,7 @@ The stock list starts from a checked-in snapshot of the S&P 500 at
 `npm run seed:constituents`. See `backend/data/constituents/README.md`
 for the snapshot source URL, date, and how to refresh it.
 
-The live path fills in financials and a halal verdict from two external
+The live path fills in financials and a compliance verdict from two external
 sources, both called only by the seed job, never at request time:
 
 - **Finnhub** `/stock/profile2` — name, exchange, industry, market cap.
@@ -139,7 +143,7 @@ All four are read by the backend from `backend/.env` (copy
 ## Methodology
 
 Screening is computed in-house from AAOIFI financial ratios — no paid
-halal-verdict API. Thresholds (`backend/src/config/screening.ts`), all
+screening API. Thresholds (`backend/src/config/screening.ts`), all
 **strict `<`** (exactly at the limit counts as a breach):
 
 | Ratio | Limit |
@@ -172,8 +176,9 @@ npm run seed -- --rescreen
 Ordered by user-facing impact, measured against the first full live seed
 (503/503 S&P 500 stocks, 2026-09-19):
 
-1. **~41% of the S&P 500 screens `unknown`** (halal 144/29%, not_halal
-   154/31%, unknown 205/41%) — a data-availability limit, not a bug.
+1. **~41% of the S&P 500 screens `unknown`** (compliant 144/29%,
+   non-compliant 154/31%, unknown 205/41%) — a data-availability limit,
+   not a bug.
    Breakdown: 144 "Interest income not reported", 53 "TTM approximated
    from latest full fiscal year", 22 "Total debt not reported", 8
    "Revenue not reported".
